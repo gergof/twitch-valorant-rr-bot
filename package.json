@@ -1,0 +1,28 @@
+{
+  "name": "twitch-valorant-rr-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Twitch bot to output your RR change to the chat at the end of each match",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gergof/twitch-valorant-rr-bot.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gergof/twitch-valorant-rr-bot/issues"
+  },
+  "homepage": "https://github.com/gergof/twitch-valorant-rr-bot#readme",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "env-var": "^7.5.0",
+    "fastify": "^5.8.4",
+    "got": "^14.6.6"
+  }
+}
