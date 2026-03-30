@@ -197,6 +197,24 @@ class App {
 
 		return channel;
 	}
+
+	public async updateChannelSettings(
+		channelId: number,
+		settings: {
+			active: boolean;
+			valorantAccount: string;
+		}
+	): Promise<Channel> {
+		const em = this.orm.em.fork();
+		const channel = await em.findOneOrFail(Channel, channelId)
+
+		channel.active = settings.active
+		channel.valorantAccount = settings.valorantAccount || null
+
+		await em.flush()
+
+		return channel
+	}
 }
 
 export default App;

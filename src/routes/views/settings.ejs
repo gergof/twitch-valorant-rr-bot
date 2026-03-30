@@ -10,8 +10,8 @@
 			</div>
 			<span class="status-pill"><%= channel.active ? 'Enabled' : 'Disabled' %></span>
 		</div>
-		<form class="settings-form" method="post" action="/settings">
-			<label class="toggle-card" for="extensionEnabled">
+		<form class="settings-form" method="post" action="/dashboard/settings">
+			<label class="toggle-card" for="active">
 				<div class="toggle-copy">
 					<span class="field-title">Bot status</span>
 					<span class="field-help">Enable or disable bot integration under your Twitch streams.</span>

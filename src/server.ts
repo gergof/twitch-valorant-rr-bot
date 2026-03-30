@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import FastifyCookie from "@fastify/cookie";
+import FastifyFormbody from "@fastify/formbody";
 import FastifySession from "@fastify/session";
 import FastifyView from "@fastify/view";
 import { RedisStore } from "connect-redis";
@@ -23,6 +24,7 @@ const createServer = async (config: Config) => {
 	})
 
 	server.register(FastifyCookie);
+	server.register(FastifyFormbody);
 
 	server.register(FastifySession, {
 		secret: config.getSessionSecret(),
