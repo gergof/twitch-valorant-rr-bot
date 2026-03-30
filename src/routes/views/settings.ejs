@@ -1,0 +1,48 @@
+<%- include('layouts/head') -%>
+<%- include('layouts/menu', {channel}) -%>
+
+<main class="dashboard-shell">
+	<section class="panel settings-panel">
+		<div class="panel-header">
+			<div>
+				<h2>Preferences</h2>
+				<p class="panel-subtitle">Update chatbot settings</p>
+			</div>
+			<span class="status-pill"><%= channel.active ? 'Enabled' : 'Disabled' %></span>
+		</div>
+		<form class="settings-form" method="post" action="/settings">
+			<label class="toggle-card" for="extensionEnabled">
+				<div class="toggle-copy">
+					<span class="field-title">Bot status</span>
+					<span class="field-help">Enable or disable bot integration under your Twitch streams.</span>
+				</div>
+				<span class="toggle-control">
+					<input
+						id="active"
+						name="active"
+						type="checkbox"
+						<%= channel.active ? 'checked' : '' %>
+					/>
+					<span class="toggle-slider" aria-hidden="true"></span>
+				</span>
+			</label>
+			<div class="field-group">
+				<label for="valorantAccount" class="field-title">Valorant account name</label>
+				<p class="field-help">Enter the Riot ID or account name you want this extension to monitor.</p>
+				<input
+					id="valorantAccount"
+					name="valorantAccount"
+					type="text"
+					placeholder="TenZ#NA1"
+					autocomplete="off"
+					value="<%= channel.valorantAccount || '' %>"
+				/>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="primary-button">Save settings</button>
+			</div>
+		</form>
+	</section>
+</main>
+
+<%- include('layouts/foot') -%>

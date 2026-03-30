@@ -125,7 +125,7 @@ class App {
 		return url.toString()
 	}
 
-	public async authorizeUser(code: string): Promise<void> {
+	public async authorizeUser(code: string): Promise<Channel> {
 		const em = this.orm.em.fork();
 
 		const tokenResponse = await got.post(TWITCH_TOKEN_URL, {
@@ -194,6 +194,8 @@ class App {
 		}
 
 		await em.flush();
+
+		return channel;
 	}
 }
 

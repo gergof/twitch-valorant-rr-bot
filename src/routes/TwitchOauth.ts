@@ -3,6 +3,7 @@ import { Server } from "../server.js";
 import App from "../app/App.js";
 import logger from "../logger.js";
 import HttpErrors from 'http-errors'
+import Channel from "../models/Channel.js";
 
 const Querystring = Type.Object({
 	code: Type.Optional(Type.String()),
@@ -20,7 +21,7 @@ const TwitchOauth = (server: Server, app: App) => {
 		schema: {
 			querystring: Querystring
 		}
-	}, async req => {
+	}, async (req, resp) => {
 		if(req.query.error) {
 			return 'had error'
 		}
@@ -30,9 +31,13 @@ const TwitchOauth = (server: Server, app: App) => {
 		}
 
 		try {
-			await app.authorizeUser(req.query.code)
+			const channel = await app.authorizeUser(req.query.code)
 
-			return 'ok!'
+			await req.session.regenerate()
+			req.session.channel = channel;
+			await req.session.save()
+
+			return resp.redirect('/dashboard')
 		} catch {
 			return 'internal error'
 		}

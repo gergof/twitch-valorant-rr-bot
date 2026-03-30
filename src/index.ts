@@ -15,7 +15,7 @@ const main = async () => {
 	const orm = createOrm(config);
 	const app = new App(config, orm);
 
-	const server = createServer()
+	const server = await createServer(config)
 	registerRoutes(server, app);
 
 	logger.info('Start listening')
