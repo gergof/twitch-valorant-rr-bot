@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:18
+    restart: always
+    environment:
+      POSTGRES_USER: twitchrr
+      POSTGRES_PASSWORD: twitchrr
+      POSTGRES_DB: twitchrr
+    ports:
+      - "5432:5432"
+    volumes:
+      - "postgres_data:/var/lib/postgresql"
+volumes:
+  postgres_data: {}
