@@ -3,9 +3,9 @@ import { defineEntity, p } from "@mikro-orm/core";
 const CredentialSchema = defineEntity({
 	name: 'Credential',
 	properties:{
-		id: p.bigint().unsigned().autoincrement().primary(),
+		id: p.integer().unsigned().autoincrement().primary(),
 		type: p.enum(['bot', 'broadcaster']).default('broadcaster'),
-		twitchId: p.string().length(50).index(),
+		twitchId: p.string().length(50).index().unique(),
 		accessToken: p.string().length(50),
 		refreshToken: p.string().length(50),
 		expiresAt: p.datetime(),

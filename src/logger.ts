@@ -11,4 +11,6 @@ const logger = winston.createLogger({
 	]
 })
 
+logger.child = function () { return winston.loggers.get("default") };
+
 export default logger;

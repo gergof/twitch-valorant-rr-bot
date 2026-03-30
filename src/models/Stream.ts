@@ -3,7 +3,7 @@ import { defineEntity, p } from "@mikro-orm/core";
 const StreamSchema = defineEntity({
 	name: 'Stream',
 	properties: {
-		id: p.bigint().unsigned().autoincrement().primary(),
+		id: p.integer().unsigned().autoincrement().primary(),
 		twitchId: p.string().length(50),
 		title: p.string().length(255),
 		startedAt: p.datetime(),

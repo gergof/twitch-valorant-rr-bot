@@ -7,8 +7,8 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node-esm --project ./tsconfig.json src/index.ts",
-    "build": "rimraf dist && cross-env NODE_ENV=production tsc",
+    "start": "npm run build && node dist/index.js",
+    "build": "rimraf dist && tsc",
     "typecheck": "tsc --noEmit",
     "lint": "esw --color --ext .ts src",
     "lint:fix": "esw --color --fix --ext .ts src",
@@ -38,11 +38,14 @@
     "env-var": "^7.5.0",
     "fastify": "^5.8.4",
     "got": "^14.6.6",
+    "http-errors": "^2.0.1",
+    "nanoid": "^5.1.7",
     "winston": "^3.19.0"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^7.0.6",
     "@types/ejs": "^3.1.5",
+    "@types/http-errors": "^2.0.5",
     "@types/node": "^25.5.0",
     "@typescript-eslint/eslint-plugin": "^8.57.2",
     "@typescript-eslint/parser": "^8.57.2",
@@ -54,7 +57,6 @@
     "eslint-watch": "^8.0.0",
     "prettier": "^3.8.1",
     "rimraf": "^6.1.3",
-    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
 }

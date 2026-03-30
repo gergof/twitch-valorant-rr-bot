@@ -4,9 +4,10 @@ import Ejs from 'ejs'
 import FastifyStatic from "@fastify/static";
 import path from "node:path";
 import url from "node:url";
+import logger from "./logger.js";
 
 const createServer = () => {
-	const server = Fastify();
+	const server = Fastify({logger: true});
 
 	server.register(FastifyView, {
 		engine: {

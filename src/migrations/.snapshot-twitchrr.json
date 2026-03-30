@@ -10,19 +10,19 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int8",
+          "type": "int4",
           "unsigned": true,
           "autoincrement": true,
           "primary": true,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 64,
+          "precision": 32,
           "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "bigint"
+          "mappedType": "integer"
         },
         "twitch_id": {
           "name": "twitch_id",
@@ -31,7 +31,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
+          "unique": true,
           "length": 50,
           "precision": null,
           "scale": null,
@@ -106,19 +106,19 @@
         },
         "credential_id": {
           "name": "credential_id",
-          "type": "int8",
+          "type": "int4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": true,
           "length": null,
-          "precision": 64,
+          "precision": 32,
           "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "bigint"
+          "mappedType": "integer"
         },
         "created_at": {
           "name": "created_at",
@@ -183,6 +183,16 @@
           "keyName": "channel_twitch_id_index",
           "unique": false,
           "primary": false
+        },
+        {
+          "columnNames": [
+            "twitch_id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "channel_twitch_id_unique",
+          "unique": true,
+          "primary": false
         }
       ],
       "checks": [],
@@ -210,19 +220,19 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int8",
+          "type": "int4",
           "unsigned": true,
           "autoincrement": true,
           "primary": true,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 64,
+          "precision": 32,
           "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "bigint"
+          "mappedType": "integer"
         },
         "type": {
           "name": "type",
@@ -250,7 +260,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
+          "unique": true,
           "length": 50,
           "precision": null,
           "scale": null,
@@ -360,6 +370,16 @@
           "keyName": "credential_twitch_id_index",
           "unique": false,
           "primary": false
+        },
+        {
+          "columnNames": [
+            "twitch_id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "credential_twitch_id_unique",
+          "unique": true,
+          "primary": false
         }
       ],
       "checks": [
@@ -380,19 +400,19 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int8",
+          "type": "int4",
           "unsigned": true,
           "autoincrement": true,
           "primary": true,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 64,
+          "precision": 32,
           "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "bigint"
+          "mappedType": "integer"
         },
         "match_id": {
           "name": "match_id",
@@ -476,35 +496,35 @@
         },
         "stream_id": {
           "name": "stream_id",
-          "type": "int8",
+          "type": "int4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 64,
+          "precision": 32,
           "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "bigint"
+          "mappedType": "integer"
         },
         "channel_id": {
           "name": "channel_id",
-          "type": "int8",
+          "type": "int4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 64,
+          "precision": 32,
           "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "bigint"
+          "mappedType": "integer"
         },
         "created_at": {
           "name": "created_at",
@@ -589,19 +609,19 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int8",
+          "type": "int4",
           "unsigned": true,
           "autoincrement": true,
           "primary": true,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 64,
+          "precision": 32,
           "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "bigint"
+          "mappedType": "integer"
         },
         "twitch_id": {
           "name": "twitch_id",

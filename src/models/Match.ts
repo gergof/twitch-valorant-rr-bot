@@ -5,7 +5,7 @@ import Channel from "./Channel.js";
 const MatchSchema = defineEntity({
 	name: 'Match',
 	properties: {
-		id: p.bigint().unsigned().autoincrement().primary(),
+		id: p.integer().unsigned().autoincrement().primary(),
 		matchId: p.string().length(50),
 		rank: p.string().length(30),
 		rr: p.smallint(),

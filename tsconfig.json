@@ -4,7 +4,7 @@
 		"module": "node16",
 		"lib": ["es2020", "DOM"],
 		"allowJs": true,
-		"rootDirs": ["src"],
+		"rootDir": "src",
 		"outDir": "dist",
 		"resolveJsonModule": true,
 		"strict": true,
@@ -17,5 +17,5 @@
 		"experimentalDecorators": true,
 		"typeRoots": ["./node_modules/@types"]
 	},
-	"exclude": ["node_modules"]
+	"exclude": ["node_modules", "mikro-orm.config.ts"]
 }

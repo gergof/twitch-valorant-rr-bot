@@ -5,8 +5,8 @@ import Credential from './Credential.js';
 const ChannelSchema = defineEntity({
 	name: 'Channel',
 	properties: {
-		id: p.bigint().unsigned().autoincrement().primary(),
-		twitchId: p.string().length(50).index(),
+		id: p.integer().unsigned().autoincrement().primary(),
+		twitchId: p.string().length(50).index().unique(),
 		name: p.string().length(150),
 		email: p.string().length(150),
 		active: p.boolean().default(true),

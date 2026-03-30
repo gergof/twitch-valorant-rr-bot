@@ -10,6 +10,7 @@ class Config {
 	private dbPassword: string;
 	private dbName: string;
 
+	private publicUrl: string;
 	private port: number;
 
 	constructor() {
@@ -22,6 +23,7 @@ class Config {
 		this.dbPassword = env.get('DB_PASSWORD').required().asString();
 		this.dbName = env.get('DB_NAME').required().asString();
 
+		this.publicUrl = env.get('PUBLIC_URL').required().asUrlString();
 		this.port = env.get('PORT').required().asPortNumber();
 	}
 
@@ -51,6 +53,10 @@ class Config {
 
 	getDbName() {
 		return this.dbName;
+	}
+
+	getPublicUrl() {
+		return this.publicUrl;
 	}
 
 	getPort() {
