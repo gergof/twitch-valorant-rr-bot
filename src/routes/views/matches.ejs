@@ -1,0 +1,117 @@
+<%- include('layouts/head') -%>
+<%- include('layouts/menu', {channel}) -%>
+
+<main class="dashboard-shell">
+	<section class="panel">
+		<div class="panel-header">
+			<div>
+				<h2>Matches</h2>
+				<p class="panel-subtitle">Recent match results for this channel.</p>
+			</div>
+			<span class="status-pill"><%= totalMatches %> total</span>
+		</div>
+
+		<div class="table-wrap">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Ended At</th>
+						<th>Rank &amp; RR</th>
+						<th>RR Change</th>
+						<th>Map</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% if (matches.length === 0) { %>
+						<tr>
+							<td colspan="4" class="empty-cell">No matches found for this channel yet.</td>
+						</tr>
+					<% } %>
+					<% matches.forEach(match => { %>
+						<%
+							const rankSlug = match.rank.toLowerCase().replace(/\s+/g, '-');
+							const rrChangeLabel = match.rrChange > 0 ? `+${match.rrChange}` : `${match.rrChange}`;
+						%>
+						<tr>
+							<td>
+								<time class="local-datetime" datetime="<%= match.createdAt %>" data-utc="<%= match.createdAt %>">
+									<%= match.createdAt %>
+								</time>
+							</td>
+							<td>
+								<div class="match-meta">
+									<img
+										class="rank-art"
+										src="/static/ranks/<%= rankSlug %>.png"
+										alt="<%= match.rank %> rank"
+										loading="lazy"
+									/>
+									<div class="match-copy">
+										<span class="match-primary"><%= match.rank %></span>
+										<span class="match-secondary"><%= match.rr %> RR</span>
+									</div>
+								</div>
+							</td>
+							<td>
+								<span class="match-primary <%= match.rrChange > 0 ? 'rr-positive' : match.rrChange < 0 ? 'rr-negative' : '' %>"><%= rrChangeLabel %> RR</span>
+							</td>
+							<td><span class="match-primary"><%= match.map %></span></td>
+						</tr>
+					<% }) %>
+				</tbody>
+			</table>
+		</div>
+
+		<% if (totalPages > 1) { %>
+			<nav class="pagination" aria-label="Matches pagination">
+				<a
+					class="page-chip <%= page <= 1 ? 'is-disabled' : '' %>"
+					href="/dashboard/matches?page=<%= Math.max(1, page - 1) %>"
+					aria-disabled="<%= page <= 1 ? 'true' : 'false' %>"
+				>
+					Previous
+				</a>
+				<% for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) { %>
+					<a
+						class="page-chip <%= pageNumber === page ? 'is-active' : '' %>"
+						href="/dashboard/matches?page=<%= pageNumber %>"
+					>
+						<%= pageNumber %>
+					</a>
+				<% } %>
+				<a
+					class="page-chip <%= page >= totalPages ? 'is-disabled' : '' %>"
+					href="/dashboard/matches?page=<%= Math.min(totalPages, page + 1) %>"
+					aria-disabled="<%= page >= totalPages ? 'true' : 'false' %>"
+				>
+					Next
+				</a>
+			</nav>
+		<% } %>
+	</section>
+</main>
+
+<script>
+	const formatter = new Intl.DateTimeFormat(undefined, {
+		dateStyle: 'medium',
+		timeStyle: 'short'
+	});
+
+	document.querySelectorAll('.local-datetime').forEach(element => {
+		const iso = element.getAttribute('data-utc');
+
+		if(!iso) {
+			return;
+		}
+
+		const value = new Date(iso);
+
+		if(Number.isNaN(value.getTime())) {
+			return;
+		}
+
+		element.textContent = formatter.format(value);
+	});
+</script>
+
+<%- include('layouts/foot') -%>

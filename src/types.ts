@@ -36,3 +36,19 @@ export interface StreamsPageResult {
 	totalPages: number;
 	totalStreams: number;
 }
+
+export interface MatchListItem {
+	id: number;
+	rank: string;
+	rr: number;
+	rrChange: number;
+	map: string;
+	createdAt: Date;
+}
+
+export interface MatchesPageResult {
+	matches: MatchListItem[];
+	page: number;
+	totalPages: number;
+	totalMatches: number;
+}

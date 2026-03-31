@@ -3,7 +3,7 @@ import Config from "../Config.js";
 import { TWITCH_API_BASE, TWITCH_AUTHORIZATION_URL, TWITCH_TOKEN_URL, TWITCH_VALIDATE_URL } from "../constants.js";
 import { Orm } from "../orm.js";
 import AppTokenProvider from "../twitch/AppTokenProvider.js";
-import { OAuthRefreshTokenResponse, OAuthValidateResponse, StreamsPageResult, StreamListItem, UserInfoResponse } from "../types.js";
+import { MatchListItem, MatchesPageResult, OAuthRefreshTokenResponse, OAuthValidateResponse, StreamsPageResult, StreamListItem, UserInfoResponse } from "../types.js";
 import Credential from "../models/Credential.js";
 import { addSeconds } from "date-fns";
 import CredentialHelper from "../twitch/CredentialHelper.js";
@@ -259,6 +259,27 @@ class App {
 			page: loadPage,
 			totalPages,
 			totalStreams
+		}
+	}
+
+	public async getMatchesPage(channelId: number, page: number): Promise<MatchesPageResult> {
+		const em = this.orm.em.fork();
+
+		const totalMatches = await em.count(Match, {channel: channelId})
+		const totalPages = Math.max(1, Math.ceil(totalMatches / this.listPageSize))
+		const loadPage = Math.min(page, totalPages)
+
+		const matches = await em.find(Match, {channel: channelId}, {
+			orderBy: {createdAt: QueryOrder.DESC},
+			limit: this.listPageSize,
+			offset: (loadPage - 1) * this.listPageSize
+		}) as MatchListItem[]
+
+		return {
+			matches,
+			page: loadPage,
+			totalPages,
+			totalMatches
 		}
 	}
 }
