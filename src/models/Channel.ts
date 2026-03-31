@@ -1,6 +1,7 @@
 import { defineEntity, p } from "@mikro-orm/core";
 import Match from "./Match.js";
 import Credential from './Credential.js';
+import Stream from "./Stream.js";
 
 const ChannelSchema = defineEntity({
 	name: 'Channel',
@@ -12,6 +13,7 @@ const ChannelSchema = defineEntity({
 		active: p.boolean().default(true),
 		valorantAccount: p.string().length(150).nullable().default(null),
 		credential: () => p.oneToOne(Credential).nullable(),
+		streams: () => p.oneToMany(Stream).mappedBy('channel'),
 		matches: () => p.oneToMany(Match).mappedBy('channel'),
 		createdAt: p.datetime().onCreate(() => new Date()),
 		updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date())

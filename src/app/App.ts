@@ -2,34 +2,56 @@ import got from "got";
 import Config from "../Config.js";
 import { TWITCH_API_BASE, TWITCH_AUTHORIZATION_URL, TWITCH_TOKEN_URL, TWITCH_VALIDATE_URL } from "../constants.js";
 import { Orm } from "../orm.js";
-import AppTokenProvider from "../twitch/AppTokenProvider.js";
-import { MatchListItem, MatchesPageResult, OAuthRefreshTokenResponse, OAuthValidateResponse, StreamsPageResult, StreamListItem, UserInfoResponse } from "../types.js";
+import { MatchListItem, MatchesPageResult, OAuthRefreshTokenResponse, OAuthValidateResponse, StreamsPageResult, UserInfoResponse } from "../types.js";
 import Credential from "../models/Credential.js";
 import { addSeconds } from "date-fns";
-import CredentialHelper from "../twitch/CredentialHelper.js";
 import { nanoid } from "nanoid";
 import HttpErrors from 'http-errors'
 import Channel from "../models/Channel.js";
 import Match from "../models/Match.js";
 import { QueryOrder, sql } from "@mikro-orm/core";
 import Stream from "../models/Stream.js";
+import TaskRunner from "./TaskRunner.js";
+import { ApiClient } from "@twurple/api";
+import { AppTokenAuthProvider } from "@twurple/auth";
+import RRFetcher from "./RRFetcher.js";
+import LiveMonitor from "./LiveMonitor.js";
 
 class App {
 	private config: Config
-	private orm: Orm
-	private appTokenProvider: AppTokenProvider
+
+	public orm: Orm
+	public twitchApi: ApiClient;
+	public rrFetcher: RRFetcher;
+
+	private taskRunner: TaskRunner;
+	private liveMonitor: LiveMonitor;
 
 	private botAuthorizationState: string | null = null
-	private botCredentialHelper: CredentialHelper | null = null;
+	private botTwitchId: string | null = null;
 
-	private botScopes = ['user:bot', 'user:read:chat', 'user:write:chat'];
-	private userScopes = ['channel:bot', 'user:read:email']
+	private readonly botScopes = ['user:bot', 'user:read:chat', 'user:write:chat'];
+	private readonly userScopes = ['channel:bot', 'user:read:email']
 	private readonly listPageSize = 25
 
 	constructor(config: Config, orm: Orm) {
 		this.config = config;
 		this.orm = orm;
-		this.appTokenProvider = new AppTokenProvider(config);
+		this.twitchApi = new ApiClient({
+			authProvider: new AppTokenAuthProvider(this.config.getTwitchClientId(), this.config.getTwitchClientSecret())
+		})
+		this.rrFetcher = new RRFetcher(this.config);
+		this.taskRunner = new TaskRunner(this);
+		this.liveMonitor = new LiveMonitor(this.config, this);
+	}
+
+	public async initialize(): Promise<void> {
+		await this.taskRunner.initializeTasks();
+		await this.liveMonitor.initialize();
+	}
+
+	public async shutdown(): Promise<void> {
+		this.taskRunner.stopTasks();
 	}
 
 	private getBotAuthorizationRedirectUrl() {
@@ -101,22 +123,6 @@ class App {
 		}
 
 		await em.flush()
-	}
-
-	public async getBotCredentialHelper(): Promise<CredentialHelper> {
-		const em = this.orm.em.fork();
-
-		if(this.botCredentialHelper) {
-			return this.botCredentialHelper;
-		}
-
-		const botCredentials = await em.findOneOrFail(Credential, {
-			type: 'bot'
-		})
-
-		this.botCredentialHelper = new CredentialHelper(this.config, this.orm, botCredentials.id)
-
-		return this.botCredentialHelper;
 	}
 
 	public getAuthorizationUrl(): string {
@@ -216,6 +222,7 @@ class App {
 		channel.valorantAccount = settings.valorantAccount || null
 
 		await em.flush()
+		await this.taskRunner.restartRRUpdateTaskIfEligible(channel)
 
 		return channel
 	}
@@ -236,7 +243,7 @@ class App {
 		    's.title',
 		    's.startedAt',
 		    's.endedAt',
-		    sql`count(${sql.ref('m.id')})::int`.as('matchCount'),
+		    sql`count(m.id)::int`.as('matchCount'),
 		    sql`coalesce(sum(m.rr_change), 0)::int`.as('totalRr'),
 		  ])
 		  .where({ channel: channelId })
@@ -281,6 +288,42 @@ class App {
 			totalPages,
 			totalMatches
 		}
+	}
+
+	public async getBotTwitchId(): Promise<string> {
+		if(this.botTwitchId) {
+			return this.botTwitchId;
+		}
+
+		const em = this.orm.em.fork();
+
+		const credentials = await em.findOne(Credential, {type: 'bot'});
+
+		if(!credentials) {
+			throw new Error('No credentials available')
+		}
+
+		this.botTwitchId = credentials.twitchId;
+
+		return this.botTwitchId;
+	}
+
+	public async sendRRChangeMessage(channel: Channel, stream: Stream, match: Match): Promise<void> {
+		const em = this.orm.em.fork();
+
+		const streamAggregation = await em.createQueryBuilder(Match)
+			.select([
+				sql`count(id)::int`.as('matchCount'),
+		    	sql`coalesce(sum(rr_change), 0)::int`.as('totalRr')
+			])
+			.where({stream: stream})
+			.execute<{matchCount: number, totalRr: number}>()
+
+		await this.twitchApi.asUser(await this.getBotTwitchId(), async ctx => {
+			await ctx.chat.sendChatMessage(channel.twitchId,
+				`Last match: ${match.rrChange > 0 ? '+' : ''}${match.rrChange}RR on ${match.map}. Currently ${match.rank} (${match.rr}RR). This stream: ${streamAggregation.matchCount} match${streamAggregation.matchCount > 1 ? 'es' : ''} with a total of ${streamAggregation.totalRr > 0 ? '+' : ''}${streamAggregation.totalRr}RR.`
+			)
+		})
 	}
 }
 

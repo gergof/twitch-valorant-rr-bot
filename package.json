@@ -35,6 +35,9 @@
     "@mikro-orm/postgresql": "^7.0.6",
     "@oxc-node/core": "^0.0.35",
     "@sinclair/typebox": "^0.34.48",
+    "@twurple/api": "^8.0.3",
+    "@twurple/auth": "^8.0.3",
+    "@twurple/eventsub-ws": "^8.0.3",
     "connect-redis": "^9.0.0",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
@@ -44,7 +47,9 @@
     "got": "^14.6.6",
     "http-errors": "^2.0.1",
     "nanoid": "^5.1.7",
+    "p-limit": "^7.3.0",
     "redis": "^5.11.0",
+    "toad-scheduler": "^3.1.0",
     "winston": "^3.19.0"
   },
   "devDependencies": {

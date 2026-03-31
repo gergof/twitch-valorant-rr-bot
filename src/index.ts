@@ -14,8 +14,13 @@ const main = async () => {
 	const config = new Config();
 	const orm = createOrm(config);
 	const app = new App(config, orm);
-
 	const server = await createServer(config)
+
+	await app.initialize()
+	server.addHook('onClose', async () => {
+		await app.shutdown()
+	})
+
 	registerRoutes(server, app);
 
 	logger.info('Start listening')

@@ -1,3 +1,5 @@
+import { SimpleIntervalJob } from "toad-scheduler";
+
 export interface OAuthTokenResponse {
 	access_token: string;
 	expires_in: number
@@ -51,4 +53,17 @@ export interface MatchesPageResult {
 	page: number;
 	totalPages: number;
 	totalMatches: number;
+}
+
+export type ScheduledChannelTask = {
+	initialTimeout: NodeJS.Timeout | null;
+	job: SimpleIntervalJob | null;
+};
+
+export interface LastMatchStatus {
+	matchId: string;
+	rank: string;
+	rr: number;
+	rrChange: number;
+	map: string;
 }
