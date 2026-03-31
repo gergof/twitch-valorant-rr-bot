@@ -19,3 +19,20 @@ export interface UserInfoResponse {
 		email: string;
 	}[]
 }
+
+export interface StreamListItem {
+	id: number;
+	twitchId: string;
+	title: string;
+	startedAt: Date;
+	endedAt: Date | null;
+	matchCount: number;
+	totalRr: number;
+}
+
+export interface StreamsPageResult {
+	streams: StreamListItem[];
+	page: number;
+	totalPages: number;
+	totalStreams: number;
+}

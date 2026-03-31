@@ -76,6 +76,10 @@ th {
 	background-color: var(--surface-muted);
 }
 
+thead th {
+	text-align: left;
+}
+
 label {
 	display: block;
 	margin-bottom: 0.25rem;
@@ -268,6 +272,36 @@ input {
 	backdrop-filter: blur(18px);
 }
 
+.table-wrap {
+	overflow-x: auto;
+}
+
+.data-table {
+	background: var(--surface-strong);
+	border-radius: 22px;
+	overflow: hidden;
+}
+
+.data-table td {
+	background: rgba(255, 255, 255, 0.82);
+}
+
+.empty-cell {
+	padding: 2rem 1rem;
+	text-align: center;
+	color: var(--text-soft);
+}
+
+.stream-link {
+	font-weight: 700;
+	color: var(--accent-strong);
+}
+
+.stream-link:hover,
+.stream-link:focus-visible {
+	text-decoration: underline;
+}
+
 .panel-header {
 	display: flex;
 	align-items: flex-start;
@@ -292,6 +326,48 @@ input {
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
+}
+
+.live-pill {
+	background: rgba(215, 38, 61, 0.14);
+	color: var(--error);
+}
+
+.rr-positive {
+	color: var(--ok);
+	font-weight: 700;
+}
+
+.rr-negative {
+	color: var(--error);
+	font-weight: 700;
+}
+
+.pagination {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin-top: 1.25rem;
+}
+
+.page-chip {
+	padding: 0.55rem 0.85rem;
+	border-radius: 999px;
+	background: var(--surface-strong);
+	border: 1px solid var(--line);
+	font-weight: 600;
+	color: var(--text-soft);
+}
+
+.page-chip.is-active {
+	background: var(--accent-soft);
+	border-color: rgba(255, 65, 73, 0.2);
+	color: var(--accent-strong);
+}
+
+.page-chip.is-disabled {
+	pointer-events: none;
+	opacity: 0.45;
 }
 
 .settings-form {

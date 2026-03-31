@@ -1,0 +1,119 @@
+<%- include('layouts/head') -%>
+<%- include('layouts/menu', {channel}) -%>
+
+<main class="dashboard-shell">
+	<section class="panel">
+		<div class="panel-header">
+			<div>
+				<h2>Streams</h2>
+				<p class="panel-subtitle">Recent streams and their aggregated match results.</p>
+			</div>
+			<span class="status-pill"><%= totalStreams %> total</span>
+		</div>
+
+		<div class="table-wrap">
+			<table class="data-table">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Started At</th>
+						<th>Ended At</th>
+						<th>Match Count</th>
+						<th>Total RR</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% if (streams.length === 0) { %>
+						<tr>
+							<td colspan="5" class="empty-cell">No streams found for this channel yet.</td>
+						</tr>
+					<% } %>
+					<% streams.forEach(stream => { %>
+						<tr>
+							<td>
+								<a
+									class="stream-link"
+									href="https://www.twitch.tv/videos/<%= stream.twitchId %>"
+									target="_blank"
+									rel="noreferrer"
+								>
+									<%= stream.title %>
+								</a>
+							</td>
+							<td>
+								<time class="local-datetime" datetime="<%= stream.startedAt %>" data-utc="<%= stream.startedAt %>">
+									<%= stream.startedAt %>
+								</time>
+							</td>
+							<td>
+								<% if (stream.endedAt) { %>
+									<time class="local-datetime" datetime="<%= stream.endedAt %>" data-utc="<%= stream.endedAt %>">
+										<%= stream.endedAt %>
+									</time>
+								<% } else { %>
+									<span class="status-pill live-pill">Live</span>
+								<% } %>
+							</td>
+							<td><%= stream.matchCount %></td>
+							<td class="<%= stream.totalRr > 0 ? 'rr-positive' : stream.totalRr < 0 ? 'rr-negative' : '' %>">
+								<%= stream.totalRr > 0 ? `+${stream.totalRr}` : stream.totalRr %>
+							</td>
+						</tr>
+					<% }) %>
+				</tbody>
+			</table>
+		</div>
+
+		<% if (totalPages > 1) { %>
+			<nav class="pagination" aria-label="Streams pagination">
+				<a
+					class="page-chip <%= page <= 1 ? 'is-disabled' : '' %>"
+					href="/dashboard/streams?page=<%= Math.max(1, page - 1) %>"
+					aria-disabled="<%= page <= 1 ? 'true' : 'false' %>"
+				>
+					Previous
+				</a>
+				<% for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) { %>
+					<a
+						class="page-chip <%= pageNumber === page ? 'is-active' : '' %>"
+						href="/dashboard/streams?page=<%= pageNumber %>"
+					>
+						<%= pageNumber %>
+					</a>
+				<% } %>
+				<a
+					class="page-chip <%= page >= totalPages ? 'is-disabled' : '' %>"
+					href="/dashboard/streams?page=<%= Math.min(totalPages, page + 1) %>"
+					aria-disabled="<%= page >= totalPages ? 'true' : 'false' %>"
+				>
+					Next
+				</a>
+			</nav>
+		<% } %>
+	</section>
+</main>
+
+<script>
+	const formatter = new Intl.DateTimeFormat(undefined, {
+		dateStyle: 'medium',
+		timeStyle: 'short'
+	});
+
+	document.querySelectorAll('.local-datetime').forEach(element => {
+		const iso = element.getAttribute('data-utc');
+
+		if(!iso) {
+			return;
+		}
+
+		const value = new Date(iso);
+
+		if(Number.isNaN(value.getTime())) {
+			return;
+		}
+
+		element.textContent = formatter.format(value);
+	});
+</script>
+
+<%- include('layouts/foot') -%>

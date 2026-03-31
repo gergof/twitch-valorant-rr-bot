@@ -3,13 +3,16 @@ import Config from "../Config.js";
 import { TWITCH_API_BASE, TWITCH_AUTHORIZATION_URL, TWITCH_TOKEN_URL, TWITCH_VALIDATE_URL } from "../constants.js";
 import { Orm } from "../orm.js";
 import AppTokenProvider from "../twitch/AppTokenProvider.js";
-import { OAuthRefreshTokenResponse, OAuthValidateResponse, UserInfoResponse } from "../types.js";
+import { OAuthRefreshTokenResponse, OAuthValidateResponse, StreamsPageResult, StreamListItem, UserInfoResponse } from "../types.js";
 import Credential from "../models/Credential.js";
 import { addSeconds } from "date-fns";
 import CredentialHelper from "../twitch/CredentialHelper.js";
 import { nanoid } from "nanoid";
 import HttpErrors from 'http-errors'
 import Channel from "../models/Channel.js";
+import Match from "../models/Match.js";
+import { QueryOrder, sql } from "@mikro-orm/core";
+import Stream from "../models/Stream.js";
 
 class App {
 	private config: Config
@@ -21,6 +24,7 @@ class App {
 
 	private botScopes = ['user:bot', 'user:read:chat', 'user:write:chat'];
 	private userScopes = ['channel:bot', 'user:read:email']
+	private readonly listPageSize = 25
 
 	constructor(config: Config, orm: Orm) {
 		this.config = config;
@@ -214,6 +218,48 @@ class App {
 		await em.flush()
 
 		return channel
+	}
+
+	public async getStreamsPage(channelId: number, page: number): Promise<StreamsPageResult> {
+		const em = this.orm.em.fork();
+
+		const totalStreams = await em.count(Stream, {channel: channelId})
+		const totalPages = Math.max(1, Math.ceil(totalStreams/this.listPageSize))
+		const loadPage = Math.min(page, totalPages)
+
+		const streams = await em
+		  .createQueryBuilder(Stream, 's')
+		  .leftJoin('s.matches', 'm')
+		  .select([
+		    's.id',
+		    's.twitchId',
+		    's.title',
+		    's.startedAt',
+		    's.endedAt',
+		    sql`count(${sql.ref('m.id')})::int`.as('matchCount'),
+		    sql`coalesce(sum(m.rr_change), 0)::int`.as('totalRr'),
+		  ])
+		  .where({ channel: channelId })
+		  .groupBy(['s.id', 's.twitchId', 's.title', 's.startedAt', 's.endedAt'])
+		  .orderBy({ 's.startedAt': QueryOrder.DESC })
+		  .limit(this.listPageSize)
+		  .offset((loadPage - 1) * this.listPageSize)
+		  .execute<{
+		    id: number;
+		    twitchId: string;
+		    title: string;
+		    startedAt: Date;
+		    endedAt: Date | null;
+		    matchCount: number;
+		    totalRr: number;
+		  }[]>();
+
+		return {
+			streams,
+			page: loadPage,
+			totalPages,
+			totalStreams
+		}
 	}
 }
 

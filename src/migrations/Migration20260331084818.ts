@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations';
 
-export class Migration20260330101649 extends Migration {
+export class Migration20260331084818 extends Migration {
 
   override up(): void | Promise<void> {
     this.addSql(`create table "credential" ("id" serial primary key, "type" text not null default 'broadcaster', "twitch_id" varchar(50) not null, "access_token" varchar(50) not null, "refresh_token" varchar(50) not null, "expires_at" timestamptz not null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`);
@@ -12,7 +12,7 @@ export class Migration20260330101649 extends Migration {
     this.addSql(`alter table "channel" add constraint "channel_twitch_id_unique" unique ("twitch_id");`);
     this.addSql(`alter table "channel" add constraint "channel_credential_id_unique" unique ("credential_id");`);
 
-    this.addSql(`create table "stream" ("id" serial primary key, "twitch_id" varchar(50) not null, "title" varchar(255) not null, "started_at" timestamptz not null, "ended_at" timestamptz null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`);
+    this.addSql(`create table "stream" ("id" serial primary key, "twitch_id" varchar(50) not null, "title" varchar(255) not null, "started_at" timestamptz not null, "ended_at" timestamptz null, "channel_id" int not null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`);
 
     this.addSql(`create table "match" ("id" serial primary key, "match_id" varchar(50) not null, "rank" varchar(30) not null, "rr" smallint not null, "rr_change" smallint not null, "map" varchar(50) not null, "stream_id" int not null, "channel_id" int not null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`);
 
@@ -20,12 +20,15 @@ export class Migration20260330101649 extends Migration {
 
     this.addSql(`alter table "channel" add constraint "channel_credential_id_foreign" foreign key ("credential_id") references "credential" ("id") on delete set null;`);
 
+    this.addSql(`alter table "stream" add constraint "stream_channel_id_foreign" foreign key ("channel_id") references "channel" ("id");`);
+
     this.addSql(`alter table "match" add constraint "match_stream_id_foreign" foreign key ("stream_id") references "stream" ("id");`);
     this.addSql(`alter table "match" add constraint "match_channel_id_foreign" foreign key ("channel_id") references "channel" ("id");`);
   }
 
   override down(): void | Promise<void> {
     this.addSql(`alter table "channel" drop constraint "channel_credential_id_foreign";`);
+    this.addSql(`alter table "stream" drop constraint "stream_channel_id_foreign";`);
     this.addSql(`alter table "match" drop constraint "match_channel_id_foreign";`);
     this.addSql(`alter table "match" drop constraint "match_stream_id_foreign";`);
 
