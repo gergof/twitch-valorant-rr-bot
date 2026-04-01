@@ -16,6 +16,7 @@ import { ApiClient } from "@twurple/api";
 import { AppTokenAuthProvider } from "@twurple/auth";
 import RRFetcher from "./RRFetcher.js";
 import LiveMonitor from "./LiveMonitor.js";
+import logger from "../logger.js";
 
 class App {
 	private config: Config
@@ -229,6 +230,25 @@ class App {
 		await this.liveMonitor.syncChannel(channel)
 
 		return channel
+	}
+
+	public async deactivateChannel(channelId: number): Promise<void> {
+		const em = this.orm.em.fork();
+		const channel = await em.findOneOrFail(Channel, channelId)
+
+		if(!channel.active) {
+			return;
+		}
+
+		channel.active = false
+		await em.flush()
+
+		logger.warn('Channel deactivated due to invalid Valorant account', {
+			channelId: channel.id,
+			twitchId: channel.twitchId
+		})
+
+		await this.liveMonitor.syncChannel(channel)
 	}
 
 	public async getStreamsPage(channelId: number, page: number): Promise<StreamsPageResult> {

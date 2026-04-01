@@ -34,4 +34,9 @@ const main = async () => {
 	logger.info('Started listening')
 }
 
-main()
+main().catch(error => {
+	logger.error('Application failed to start', {
+		error: error instanceof Error ? error.message : String(error)
+	})
+	process.exit(1)
+})

@@ -11,6 +11,7 @@ import Stream from "../models/Stream.js";
 import pLimit from "p-limit";
 import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 import { TWITCH_VALORANT_GAME_ID } from "../constants.js";
+import logger from "../logger.js";
 
 class LiveMonitor {
 	private config: Config;
@@ -113,6 +114,10 @@ class LiveMonitor {
 				{minutes: 5, runImmediately: false},
 				new AsyncTask('stream-reconcile-task', async () => {
 					await this.reconcileEligibleChannels(true)
+				}, error => {
+					logger.error('Stream reconcile task failed', {
+						error: error instanceof Error ? error.message : String(error)
+					})
 				}),
 				{id: 'stream-reconcile', preventOverrun: true}
 			)
@@ -130,8 +135,33 @@ class LiveMonitor {
 		const limit = pLimit(50)
 
 		await Promise.all(channels.map(channel => limit(async () => {
-			await this.reconcileChannel(channel, sendWelcome)
+			try {
+				await this.reconcileChannel(channel, sendWelcome)
+			} catch (error) {
+				logger.error('Channel reconcile failed', {
+					channelId: channel.id,
+					twitchId: channel.twitchId,
+					error: error instanceof Error ? error.message : String(error)
+				})
+			}
 		})))
+	}
+
+	private async safelyHandleChannelEvent(
+		channel: Channel,
+		action: 'online' | 'offline' | 'chat',
+		handler: () => Promise<void>
+	): Promise<void> {
+		try {
+			await handler()
+		} catch (error) {
+			logger.error('Live monitor channel event failed', {
+				action,
+				channelId: channel.id,
+				twitchId: channel.twitchId,
+				error: error instanceof Error ? error.message : String(error)
+			})
+		}
 	}
 
 	private addChannel(channel: Channel): void {
@@ -147,14 +177,20 @@ class LiveMonitor {
 						return;
 					}
 
-					await this.handleOnline(channel, stream, true)
+					await this.safelyHandleChannelEvent(channel, 'online', async () => {
+						await this.handleOnline(channel, stream, true)
+					})
 				}),
 			offline: this.listener.onStreamOffline(channel.twitchId, async () => {
-				await this.handleOffline(channel)
+				await this.safelyHandleChannelEvent(channel, 'offline', async () => {
+					await this.handleOffline(channel)
+				})
 			}),
 			chat: this.listener.onChannelChatMessage(channel.twitchId, this.botId as string, async event => {
 				if(['!rr', '!rank'].includes(event.messageText.trim())) {
-					await this.app.sendRRMessage(channel)
+					await this.safelyHandleChannelEvent(channel, 'chat', async () => {
+						await this.app.sendRRMessage(channel)
+					})
 				}
 			})
 		})

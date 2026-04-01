@@ -3,6 +3,7 @@ import App from "./App.js";
 import Channel from "../models/Channel.js";
 import Stream from "../models/Stream.js";
 import Match from "../models/Match.js";
+import logger from "../logger.js";
 
 class TaskRunner {
 	private app: App
@@ -40,21 +41,31 @@ class TaskRunner {
 
 		this.pendingTasks.set(key, setTimeout(() => {
 			this.pendingTasks.delete(key);
-			this.scheduler.addSimpleIntervalJob(
-				new SimpleIntervalJob(
-				{seconds: 60, runImmediately: true},
-				new AsyncTask(`${key}-task`, async () => {
-					const em = this.app.orm.em.fork();
+				this.scheduler.addSimpleIntervalJob(
+					new SimpleIntervalJob(
+					{seconds: 60, runImmediately: true},
+					new AsyncTask(`${key}-task`, async () => {
+						const em = this.app.orm.em.fork();
 
-					if(!channel.valorantAccount) {
-						return;
-					}
+						if(!channel.valorantAccount) {
+							return;
+						}
 
-					const lastMatch = await this.app.rrFetcher.getLastMatchStatus(channel.valorantAccount);
+						let lastMatch;
+						try {
+							lastMatch = await this.app.rrFetcher.getLastMatchStatus(channel.valorantAccount);
+						} catch (error) {
+							if (error instanceof Error && error.message === 'Invalid user') {
+								await this.app.deactivateChannel(channel.id)
+								return;
+							}
 
-					if(!lastMatch) {
-						return;
-					}
+							throw error;
+						}
+
+						if(!lastMatch) {
+							return;
+						}
 
 					const lastMatchInDb = await em.findOne(Match, {
 						channel: channel
@@ -76,8 +87,14 @@ class TaskRunner {
 						await em.flush()
 
 						await this.app.sendRRChangeMessage(channel, stream, match)
-					}
-				}),
+						}
+					}, error => {
+						logger.error('RR update task failed', {
+							channelId: channel.id,
+							twitchId: channel.twitchId,
+							error: error instanceof Error ? error.message : String(error)
+						})
+					}),
 				{
 					id: key,
 					preventOverrun: true
