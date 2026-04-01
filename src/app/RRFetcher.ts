@@ -24,7 +24,8 @@ class RRFetcher {
 				headers: {
 					Authorization: this.config.getValorantApiKey()
 				},
-				throwHttpErrors: false
+				throwHttpErrors: false,
+				responseType: 'json'
 			})
 
 			if(resp.statusCode == 404) {

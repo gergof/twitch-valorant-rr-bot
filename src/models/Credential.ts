@@ -8,7 +8,8 @@ const CredentialSchema = defineEntity({
 		twitchId: p.string().length(50).index().unique(),
 		accessToken: p.string().length(255),
 		refreshToken: p.string().length(255),
-		expiresAt: p.datetime(),
+		obtainmentTimestamp: p.datetime(),
+		expiresIn: p.integer().unsigned(),
 		createdAt: p.datetime().onCreate(() => new Date()),
 		updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date())
 	}

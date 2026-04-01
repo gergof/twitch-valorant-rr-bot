@@ -4,7 +4,6 @@ import { TWITCH_API_BASE, TWITCH_AUTHORIZATION_URL, TWITCH_TOKEN_URL, TWITCH_VAL
 import { Orm } from "../orm.js";
 import { MatchListItem, MatchesPageResult, OAuthRefreshTokenResponse, OAuthValidateResponse, StreamsPageResult, UserInfoResponse } from "../types.js";
 import Credential from "../models/Credential.js";
-import { addSeconds } from "date-fns";
 import { nanoid } from "nanoid";
 import HttpErrors from 'http-errors'
 import Channel from "../models/Channel.js";
@@ -31,9 +30,9 @@ class App {
 	private botAuthorizationState: string | null = null
 	private botTwitchId: string | null = null;
 
-	private readonly botScopes = ['user:bot', 'user:read:chat', 'user:write:chat'];
-	private readonly userScopes = ['channel:bot', 'user:read:email']
-	private readonly listPageSize = 25
+	public readonly botScopes = ['user:bot', 'user:read:chat', 'user:write:chat'];
+	public readonly userScopes = ['channel:bot', 'user:read:email']
+	public readonly listPageSize = 25
 
 	constructor(config: Config, orm: Orm) {
 		this.config = config;
@@ -124,14 +123,16 @@ class App {
 				twitchId: validateResponse.user_id,
 				accessToken: tokenResponse.access_token,
 				refreshToken: tokenResponse.refresh_token,
-				expiresAt: addSeconds(new Date(), tokenResponse.expires_in - 300)
+				obtainmentTimestamp: new Date(),
+				expiresIn: tokenResponse.expires_in
 			})
 		}
 		else {
 			botCredentials.twitchId = validateResponse.user_id;
 			botCredentials.accessToken = tokenResponse.access_token;
 			botCredentials.refreshToken = tokenResponse.refresh_token;
-			botCredentials.expiresAt = addSeconds(new Date(), tokenResponse.expires_in - 300)
+			botCredentials.obtainmentTimestamp = new Date(),
+			botCredentials.expiresIn = tokenResponse.expires_in
 		}
 
 		await em.flush()
@@ -182,12 +183,14 @@ class App {
 				twitchId: validateResponse.user_id,
 				accessToken: tokenResponse.access_token,
 				refreshToken: tokenResponse.refresh_token,
-				expiresAt: addSeconds(new Date(), tokenResponse.expires_in - 300)
+				obtainmentTimestamp: new Date(),
+				expiresIn: tokenResponse.expires_in
 			})
 		} else {
 			credentials.accessToken = tokenResponse.access_token;
 			credentials.refreshToken = tokenResponse.refresh_token;
-			credentials.expiresAt = addSeconds(new Date(), tokenResponse.expires_in - 300)
+			credentials.obtainmentTimestamp = new Date(),
+			credentials.expiresIn = tokenResponse.expires_in
 		}
 
 		const userInfoResponse = await got.get(`${TWITCH_API_BASE}/users`, {
@@ -369,13 +372,11 @@ class App {
 		    	sql`coalesce(sum(rr_change), 0)::int`.as('totalRr')
 			])
 			.where({stream: stream})
-			.execute<{matchCount: number, totalRr: number}>()
+			.execute<{matchCount: number, totalRr: number}[]>()
 
-		await this.twitchApi.asUser(await this.getBotTwitchId(), async ctx => {
-			await ctx.chat.sendChatMessage(channel.twitchId,
-				`Last match: ${match.rrChange > 0 ? '+' : ''}${match.rrChange}RR on ${match.map}. Currently ${match.rank} (${match.rr}RR). This stream: ${streamAggregation.matchCount} match${streamAggregation.matchCount > 1 ? 'es' : ''} with a total of ${streamAggregation.totalRr > 0 ? '+' : ''}${streamAggregation.totalRr}RR.`
-			)
-		})
+		await this.twitchApi.chat.sendChatMessageAsApp(await this.getBotTwitchId(), channel.twitchId,
+			`Last match: ${match.rrChange > 0 ? '+' : ''}${match.rrChange}RR on ${match.map}. Currently ${match.rank} (${match.rr}RR). This stream: ${streamAggregation[0].matchCount} match${streamAggregation[0].matchCount > 1 ? 'es' : ''} with a total of ${streamAggregation[0].totalRr > 0 ? '+' : ''}${streamAggregation[0].totalRr}RR.`
+		)
 		logger.info('Sent RR change message', {
 			channelId: channel.id,
 			streamId: stream.id,
@@ -384,9 +385,9 @@ class App {
 	}
 
 	public async sendWelcomeMessage(channel: Channel): Promise<void> {
-		await this.twitchApi.asUser(await this.getBotTwitchId(), async ctx => {
-			await ctx.chat.sendChatMessage(channel.twitchId, 'Welcome! Send !rr or !rank to see current rank.')
-		})
+		await this.twitchApi.chat.sendChatMessageAsApp(await this.getBotTwitchId(), channel.twitchId,
+			'Welcome! Send !rr or !rank to see current rank.'
+		)
 		logger.info('Sent welcome message', {
 			channelId: channel.id,
 			twitchId: channel.twitchId
@@ -400,9 +401,9 @@ class App {
 			channel: channel
 		}, {last: 1});
 
-		await this.twitchApi.asUser(await this.getBotTwitchId(), async ctx => {
-			await ctx.chat.sendChatMessage(channel.twitchId, lastMatch ? `Currently ${lastMatch.rank} (${lastMatch.rr}RR).` : 'Rank not available yet.')
-		})
+		await this.twitchApi.chat.sendChatMessageAsApp(await this.getBotTwitchId(), channel.twitchId,
+			lastMatch ? `Currently ${lastMatch.rank} (${lastMatch.rr}RR).` : 'Rank not available yet.'
+		)
 		logger.info('Sent RR status message', {
 			channelId: channel.id,
 			twitchId: channel.twitchId,

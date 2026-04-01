@@ -301,8 +301,8 @@
           "enumItems": [],
           "mappedType": "string"
         },
-        "expires_at": {
-          "name": "expires_at",
+        "obtainment_timestamp": {
+          "name": "obtainment_timestamp",
           "type": "timestamptz(6)",
           "unsigned": false,
           "autoincrement": false,
@@ -316,6 +316,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "expires_in": {
+          "name": "expires_in",
+          "type": "int4",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
         },
         "created_at": {
           "name": "created_at",

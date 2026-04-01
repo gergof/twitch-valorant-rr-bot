@@ -5,7 +5,6 @@ import {EventSubSubscription} from '@twurple/eventsub-base'
 import { ApiClient, HelixStream } from "@twurple/api";
 import Config from "../Config.js";
 import Credential from "../models/Credential.js";
-import { addSeconds } from "date-fns";
 import Channel from "../models/Channel.js";
 import Stream from "../models/Stream.js";
 import pLimit from "p-limit";
@@ -39,22 +38,30 @@ class LiveMonitor {
 		this.apiClient = new ApiClient({authProvider: this.authProvider})
 		this.listener = new EventSubWsListener({apiClient: this.apiClient})
 
-		this.authProvider.onRefresh(async (_userId, token) => {
+		this.authProvider.onRefresh(async (userId, token) => {
 			const em = this.app.orm.em.fork();
 
 			const credentials = await em.findOne(Credential, {
-				type: 'bot'
+				twitchId: userId
 			})
 
 			if(!credentials) {
+				logger.warn('Received refreshed token for unknown Twitch user', {
+					userId
+				})
 				return;
 			}
 
 			credentials.accessToken = token.accessToken;
 			credentials.refreshToken = token.refreshToken as string;
-			credentials.expiresAt = addSeconds(new Date(), (token.expiresIn as number) - 300)
+			credentials.obtainmentTimestamp = new Date(token.obtainmentTimestamp);
+			credentials.expiresIn = token.expiresIn as number;
 
 			await em.flush();
+			logger.info('Stored refreshed Twitch credentials', {
+				userId,
+				type: credentials.type
+			})
 		})
 	}
 
@@ -70,10 +77,12 @@ class LiveMonitor {
 
 		this.botId = credentials.twitchId;
 
-		this.authProvider.addUser(credentials.twitchId, {
+		await this.authProvider.addUserForToken({
 			accessToken: credentials.accessToken,
-			refreshToken: credentials.refreshToken
-		} as any)
+			refreshToken: credentials.refreshToken,
+			obtainmentTimestamp: credentials.obtainmentTimestamp.getTime(),
+			expiresIn: credentials.expiresIn,
+		})
 
 		this.listener.start();
 		logger.info('EventSub listener started')
@@ -108,9 +117,9 @@ class LiveMonitor {
 			}
 		})
 
-		channels.forEach(channel => {
-			this.addChannel(channel)
-		})
+		await Promise.all(channels.map(async channel => {
+			await this.addChannel(channel)
+		}))
 		logger.info('Loaded eligible channels for live monitor', {
 			channelCount: channels.length
 		})
@@ -172,8 +181,41 @@ class LiveMonitor {
 		}
 	}
 
-	private addChannel(channel: Channel): void {
+	private async ensureChannelCredentialsAdded(channel: Channel): Promise<boolean> {
+		const em = this.app.orm.em.fork();
+		const channelWithCredential = await em.findOne(Channel, channel.id, {
+			populate: ['credential']
+		})
+
+		if(!channelWithCredential?.credential) {
+			logger.warn('Skipping channel registration because credential is missing', {
+				channelId: channel.id,
+				twitchId: channel.twitchId
+			})
+			return false
+		}
+
+		this.authProvider.addUser(channelWithCredential.twitchId, {
+			accessToken: channelWithCredential.credential.accessToken,
+			refreshToken: channelWithCredential.credential.refreshToken,
+			obtainmentTimestamp: channelWithCredential.credential.obtainmentTimestamp.getTime(),
+			expiresIn: channelWithCredential.credential.expiresIn
+		})
+
+		logger.info('Added broadcaster credentials to auth provider', {
+			channelId: channel.id,
+			twitchId: channel.twitchId
+		})
+
+		return true
+	}
+
+	private async addChannel(channel: Channel): Promise<void> {
 		if(this.subscriptions.has(channel.id)) {
+			return;
+		}
+
+		if(!(await this.ensureChannelCredentialsAdded(channel))) {
 			return;
 		}
 
@@ -237,7 +279,7 @@ class LiveMonitor {
 		}
 
 		if(!this.subscriptions.has(channel.id) && isEligible) {
-			this.addChannel(channel);
+			await this.addChannel(channel);
 		}
 
 		if(isEligible) {
