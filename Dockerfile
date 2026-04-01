@@ -23,6 +23,7 @@ COPY package.json package-lock.json ./
 RUN npm ci && npm cache clean --force
 COPY mikro-orm.config.js ./
 COPY --from=build /app/dist ./dist
+RUN chown node:node -R /app
 USER node
 EXPOSE 3000
 CMD ["sh", "-c", "npm run migrate && node dist/index.js"]
