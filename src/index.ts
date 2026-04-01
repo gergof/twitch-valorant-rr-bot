@@ -61,6 +61,7 @@ const main = async () => {
 
 	logger.info('Start listening');
 	await server.listen({
+		host: '0.0.0.0',
 		port: config.getPort()
 	});
 	logger.info('Started listening');
