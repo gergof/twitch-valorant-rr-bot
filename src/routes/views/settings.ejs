@@ -8,7 +8,7 @@
 				<h2>Preferences</h2>
 				<p class="panel-subtitle">Update chatbot settings</p>
 			</div>
-			<span class="status-pill"><%= channel.active ? 'Enabled' : 'Disabled' %></span>
+			<span class="status-pill"><%= channel.active && channel.valorantAccount != null ? 'Enabled' : 'Disabled' %></span>
 		</div>
 		<form class="settings-form" method="post" action="/dashboard/settings">
 			<label class="toggle-card" for="active">
@@ -28,7 +28,7 @@
 			</label>
 			<div class="field-group">
 				<label for="valorantAccount" class="field-title">Valorant account name</label>
-				<p class="field-help">Enter the Riot ID or account name you want this extension to monitor.</p>
+				<p class="field-help">Enter the Riot ID or account name you want this bot to monitor. If you have no ID defined, the bot will be disabled.</p>
 				<input
 					id="valorantAccount"
 					name="valorantAccount"
