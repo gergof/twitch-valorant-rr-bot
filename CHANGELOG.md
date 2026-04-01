@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.2](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.1...v1.0.2) (2026-04-01)
+
+
+### Build/CI
+
+* Moved mikro-orm cli to prod dependencies ([4289c62](https://github.com/gergof/twitch-valorant-rr-bot/commit/4289c62191aa82be7f1774ed08898e66d333b233))
+
 ## [1.0.1](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.0...v1.0.1) (2026-04-01)
 
 
