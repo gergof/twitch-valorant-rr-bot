@@ -21,7 +21,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci && npm cache clean --force
-COPY mikro-orm.config.ts ./
+COPY mikro-orm.config.js ./
 COPY --from=build /app/dist ./dist
 USER node
 EXPOSE 3000
