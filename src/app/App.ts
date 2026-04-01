@@ -222,7 +222,7 @@ class App {
 		channel.valorantAccount = settings.valorantAccount || null
 
 		await em.flush()
-		this.liveMonitor.syncChannel(channel)
+		await this.liveMonitor.syncChannel(channel)
 
 		return channel
 	}

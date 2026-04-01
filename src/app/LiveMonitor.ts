@@ -76,6 +76,7 @@ class LiveMonitor {
 		this.listener.start();
 
 		await this.loadChannels();
+		await this.reconcileEligibleChannels(false);
 		this.startReconcileTask();
 	}
 
@@ -109,58 +110,28 @@ class LiveMonitor {
 	private startReconcileTask(): void {
 		this.scheduler.addSimpleIntervalJob(
 			new SimpleIntervalJob(
-				{minutes: 5, runImmediately: true},
+				{minutes: 5, runImmediately: false},
 				new AsyncTask('stream-reconcile-task', async () => {
-					const em = this.app.orm.em.fork();
-
-					const channels = await em.find(Channel, {
-						active: true,
-						valorantAccount: {
-							$ne: null
-						}
-					}, {
-						populate: ['streams'],
-						populateWhere: {
-							streams: {
-								endedAt: null
-							}
-						}
-					})
-
-					await Promise.all(channels.map(async channel => {
-						const liveStream = await this.app.twitchApi.streams.getStreamByUserIdBatched(channel.twitchId);
-
-						if(!liveStream) {
-							// channel is offline
-							await this.handleOffline(channel)
-							return;
-						}
-
-						if(channel.streams.length) {
-							// we have streams currently running for the channel
-							// end non-current streams
-							const endedStreams = channel.streams.reduce((acc, cur) => {
-								if(cur.twitchId != liveStream.id) {
-									cur.endedAt = new Date()
-									return acc + 1
-								}
-
-								return acc;
-							}, 0)
-							await em.flush()
-							if(endedStreams == channel.streams.length) {
-								await this.handleOffline(channel)
-							}
-						}
-
-						if(!channel.streams.find(stream => stream.twitchId == liveStream.id)) {
-							await this.handleOnline(channel, liveStream)
-						}
-					}))
+					await this.reconcileEligibleChannels(true)
 				}),
 				{id: 'stream-reconcile', preventOverrun: true}
 			)
 		)
+	}
+
+	private async reconcileEligibleChannels(sendWelcome: boolean): Promise<void> {
+		const em = this.app.orm.em.fork();
+		const channels = await em.find(Channel, {
+			active: true,
+			valorantAccount: {
+				$ne: null
+			}
+		})
+		const limit = pLimit(50)
+
+		await Promise.all(channels.map(channel => limit(async () => {
+			await this.reconcileChannel(channel, sendWelcome)
+		})))
 	}
 
 	private addChannel(channel: Channel): void {
@@ -170,14 +141,14 @@ class LiveMonitor {
 
 		this.subscriptions.set(channel.id, {
 			channel,
-			online: this.listener.onStreamOnline(channel.twitchId, async event => {
-				const stream = await event.getStream();
-				if(!stream) {
-					return;
-				}
+				online: this.listener.onStreamOnline(channel.twitchId, async event => {
+					const stream = await event.getStream();
+					if(!stream) {
+						return;
+					}
 
-				await this.handleOnline(channel, stream)
-			}),
+					await this.handleOnline(channel, stream, true)
+				}),
 			offline: this.listener.onStreamOffline(channel.twitchId, async () => {
 				await this.handleOffline(channel)
 			}),
@@ -195,12 +166,15 @@ class LiveMonitor {
 		if(subscription) {
 			subscription.online.stop();
 			subscription.offline.stop();
+			subscription.chat.stop();
 		}
 
+		this.liveChannels.delete(channel.id)
+		this.app.taskRunner.stopRRUpdateTask(channel)
 		this.subscriptions.delete(channel.id)
 	}
 
-	public syncChannel(channel: Channel): void {
+	public async syncChannel(channel: Channel): Promise<void> {
 		const isEligible = channel.active && channel.valorantAccount != null;
 
 		if(this.subscriptions.has(channel.id) && !isEligible) {
@@ -210,28 +184,28 @@ class LiveMonitor {
 
 		if(!this.subscriptions.has(channel.id) && isEligible) {
 			this.addChannel(channel);
-			return
+		}
+
+		if(isEligible) {
+			await this.reconcileChannel(channel, false)
 		}
 	}
 
-	private async handleOnline(channel: Channel, liveStream: HelixStream): Promise<void> {
-		if(liveStream.type != 'live') {
-			return;
-		}
-
-		if(liveStream.gameId != TWITCH_VALORANT_GAME_ID) {
-			return;
-		}
-
-		if(this.liveChannels.has(channel.id)) {
-			return;
-		}
-
-		this.liveChannels.add(channel.id);
-
+	private async upsertLiveStream(channel: Channel, liveStream: HelixStream): Promise<Stream> {
 		const em = this.app.orm.em.fork();
 
+		await em.nativeUpdate(Stream, {
+			channel: channel,
+			endedAt: null,
+			twitchId: {
+				$ne: liveStream.id
+			}
+		}, {
+			endedAt: new Date()
+		})
+
 		let stream = await em.findOne(Stream, {
+			channel: channel,
 			twitchId: liveStream.id
 		})
 
@@ -239,21 +213,38 @@ class LiveMonitor {
 			stream = em.create(Stream, {
 				twitchId: liveStream.id,
 				title: liveStream.title,
-				startedAt: new Date(),
+				startedAt: liveStream.startDate,
 				channel: channel
 			})
-			await em.flush();
+		} else {
+			stream.title = liveStream.title
+			stream.startedAt = liveStream.startDate
+			stream.endedAt = null
 		}
 
-		this.app.taskRunner.startRRUpdateTask(channel, stream)
-		await this.app.sendWelcomeMessage(channel);
+		await em.flush();
+
+		return stream
 	}
 
-	private async handleOffline(channel: Channel): Promise<void> {
-		if(!this.liveChannels.has(channel.id)) {
+	private async handleOnline(channel: Channel, liveStream: HelixStream, sendWelcome: boolean): Promise<void> {
+		if(liveStream.type != 'live' || liveStream.gameId != TWITCH_VALORANT_GAME_ID) {
+			await this.handleOffline(channel)
 			return;
 		}
 
+		const wasLive = this.liveChannels.has(channel.id)
+		this.liveChannels.add(channel.id);
+
+		const stream = await this.upsertLiveStream(channel, liveStream)
+		this.app.taskRunner.startRRUpdateTask(channel, stream)
+
+		if(!wasLive && sendWelcome) {
+			await this.app.sendWelcomeMessage(channel);
+		}
+	}
+
+	private async handleOffline(channel: Channel): Promise<void> {
 		this.liveChannels.delete(channel.id)
 		this.app.taskRunner.stopRRUpdateTask(channel)
 
@@ -262,9 +253,20 @@ class LiveMonitor {
 		await em.nativeUpdate(Stream, {
 			channel: channel,
 			endedAt: null
-		}, {
-			endedAt: new Date()
-		})
+			}, {
+				endedAt: new Date()
+			})
+	}
+
+	private async reconcileChannel(channel: Channel, sendWelcome: boolean): Promise<void> {
+		const liveStream = await this.app.twitchApi.streams.getStreamByUserIdBatched(channel.twitchId);
+
+		if(!liveStream) {
+			await this.handleOffline(channel)
+			return;
+		}
+
+		await this.handleOnline(channel, liveStream, sendWelcome)
 	}
 }
 
