@@ -6,7 +6,7 @@ const StreamSchema = defineEntity({
 	name: 'Stream',
 	properties: {
 		id: p.integer().unsigned().autoincrement().primary(),
-		twitchId: p.string().length(50),
+		twitchId: p.string().length(50).index(),
 		title: p.string().length(255),
 		startedAt: p.datetime(),
 		endedAt: p.datetime().nullable(),

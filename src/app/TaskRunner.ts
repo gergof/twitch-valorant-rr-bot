@@ -2,7 +2,6 @@ import { AsyncTask, SimpleIntervalJob, ToadScheduler } from "toad-scheduler";
 import App from "./App.js";
 import Channel from "../models/Channel.js";
 import Stream from "../models/Stream.js";
-import pLimit from "p-limit";
 import Match from "../models/Match.js";
 
 class TaskRunner {
@@ -13,11 +12,6 @@ class TaskRunner {
 
 	constructor(app: App) {
 		this.app = app;
-	}
-
-	public async initializeTasks(): Promise<void> {
-		await this.initializeRRUpdateTasks();
-		this.initializeStreamWrapUpTask();
 	}
 
 	public stopTasks(): void {
@@ -90,91 +84,6 @@ class TaskRunner {
 				)
 			)
 		}, Math.floor(Math.random() * 60_000)))
-	}
-
-	public async restartRRUpdateTaskIfEligible(channel: Channel): Promise<void> {
-		const em = this.app.orm.em.fork();
-
-		this.stopRRUpdateTask(channel)
-
-		if(!channel.active || channel.valorantAccount == null) {
-			return;
-		}
-
-		const liveStream = await em.findOne(Stream, {
-			endedAt: null
-		}, {
-			last: 1
-		})
-
-		if(liveStream) {
-			this.startRRUpdateTask(channel, liveStream)
-		}
-	}
-
-	private async initializeRRUpdateTasks(): Promise<void> {
-		const em = this.app.orm.em.fork();
-
-		const liveStreams = await em.find(Stream, {
-			endedAt: null,
-			channel: {
-				active: true,
-				valorantAccount: {
-					$ne: null
-				}
-			}
-		}, {
-			populate: ['channel']
-		})
-
-		liveStreams.forEach(stream => {
-			this.startRRUpdateTask(stream.channel, stream)
-		})
-	}
-
-	private initializeStreamWrapUpTask(): void {
-		this.scheduler.addSimpleIntervalJob(
-			new SimpleIntervalJob(
-				{hours: 6, runImmediately: true},
-				new AsyncTask('stream-wrap-up-task', async () => {
-					const em = this.app.orm.em.fork();
-
-					const liveChannels = await em.find(Channel, {
-						streams: {
-							endedAt: null
-						}
-					})
-
-					const limit = pLimit(10);
-					await Promise.all(liveChannels.map(channel => limit(async () => {
-						const channelStream = await this.app.twitchApi.streams.getStreamByUserId(channel.twitchId)
-
-						if(!channelStream) {
-							// mark all streams as ended
-							await em.nativeUpdate(Stream, {
-								channel: channel,
-								endedAt: null
-							}, {
-								endedAt: new Date()
-							})
-						} else {
-							// mark all streams except current as ended
-							await em.nativeUpdate(Stream, {
-								channel: channel,
-								endedAt: null,
-								twitchId: {
-									$ne: channelStream.id
-								}
-							}, {
-								endedAt: new Date()
-							})
-						}
-
-						await em.flush()
-					})))
-				})
-			)
-		)
 	}
 }
 

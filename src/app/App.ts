@@ -22,9 +22,9 @@ class App {
 
 	public orm: Orm
 	public twitchApi: ApiClient;
+	
 	public rrFetcher: RRFetcher;
-
-	private taskRunner: TaskRunner;
+	public taskRunner: TaskRunner;
 	private liveMonitor: LiveMonitor;
 
 	private botAuthorizationState: string | null = null
@@ -46,11 +46,11 @@ class App {
 	}
 
 	public async initialize(): Promise<void> {
-		await this.taskRunner.initializeTasks();
 		await this.liveMonitor.initialize();
 	}
 
 	public async shutdown(): Promise<void> {
+		await this.liveMonitor.shutdown();
 		this.taskRunner.stopTasks();
 	}
 
@@ -222,7 +222,7 @@ class App {
 		channel.valorantAccount = settings.valorantAccount || null
 
 		await em.flush()
-		await this.taskRunner.restartRRUpdateTaskIfEligible(channel)
+		this.liveMonitor.syncChannel(channel)
 
 		return channel
 	}
@@ -323,6 +323,24 @@ class App {
 			await ctx.chat.sendChatMessage(channel.twitchId,
 				`Last match: ${match.rrChange > 0 ? '+' : ''}${match.rrChange}RR on ${match.map}. Currently ${match.rank} (${match.rr}RR). This stream: ${streamAggregation.matchCount} match${streamAggregation.matchCount > 1 ? 'es' : ''} with a total of ${streamAggregation.totalRr > 0 ? '+' : ''}${streamAggregation.totalRr}RR.`
 			)
+		})
+	}
+
+	public async sendWelcomeMessage(channel: Channel): Promise<void> {
+		await this.twitchApi.asUser(await this.getBotTwitchId(), async ctx => {
+			await ctx.chat.sendChatMessage(channel.twitchId, 'Welcome! Send !rr or !rank to see current rank.')
+		})
+	}
+
+	public async sendRRMessage(channel: Channel): Promise<void> {
+		const em = this.orm.em.fork();
+
+		const lastMatch = await em.findOne(Match, {
+			channel: channel
+		}, {last: 1});
+
+		await this.twitchApi.asUser(await this.getBotTwitchId(), async ctx => {
+			await ctx.chat.sendChatMessage(channel.twitchId, lastMatch ? `Currently ${lastMatch.rank} (${lastMatch.rr}RR).` : 'Rank not available yet.')
 		})
 	}
 }
