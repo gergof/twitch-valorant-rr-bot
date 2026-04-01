@@ -1,17 +1,17 @@
-import { SimpleIntervalJob } from "toad-scheduler";
+import { SimpleIntervalJob } from 'toad-scheduler';
 
 export interface OAuthTokenResponse {
 	access_token: string;
-	expires_in: number
+	expires_in: number;
 }
 
 export interface OAuthRefreshTokenResponse extends OAuthTokenResponse {
-	refresh_token: string
+	refresh_token: string;
 }
 
 export interface OAuthValidateResponse {
-	user_id: string
-	scopes: string[]
+	user_id: string;
+	scopes: string[];
 }
 
 export interface UserInfoResponse {
@@ -19,7 +19,7 @@ export interface UserInfoResponse {
 		id: string;
 		display_name: string;
 		email: string;
-	}[]
+	}[];
 }
 
 export interface StreamListItem {

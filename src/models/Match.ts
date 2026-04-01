@@ -1,6 +1,7 @@
-import { defineEntity, p } from "@mikro-orm/core";
-import Stream from "./Stream.js";
-import Channel from "./Channel.js";
+import { defineEntity, p } from '@mikro-orm/core';
+
+import Channel from './Channel.js';
+import Stream from './Stream.js';
 
 const MatchSchema = defineEntity({
 	name: 'Match',
@@ -14,11 +15,14 @@ const MatchSchema = defineEntity({
 		stream: () => p.manyToOne(Stream),
 		channel: () => p.manyToOne(Channel),
 		createdAt: p.datetime().onCreate(() => new Date()),
-		updatedAt: p.datetime().onCreate(() => new Date()).onUpdate(() => new Date())
+		updatedAt: p
+			.datetime()
+			.onCreate(() => new Date())
+			.onUpdate(() => new Date())
 	}
-})
+});
 
 class Match extends MatchSchema.class {}
-MatchSchema.setClass(Match)
+MatchSchema.setClass(Match);
 
 export default Match;

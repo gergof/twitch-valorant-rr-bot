@@ -20,15 +20,24 @@ class Config {
 	private port: number;
 
 	constructor() {
-		this.twitchClientId = env.get('TWITCH_CLIENT_ID').required().asString()
-		this.twitchClientSecret = env.get('TWITCH_CLIENT_SECRET').required().asString()
-		this.valorantApiKey = env.get('VALORANT_API_KEY').required().asString()
+		this.twitchClientId = env.get('TWITCH_CLIENT_ID').required().asString();
+		this.twitchClientSecret = env
+			.get('TWITCH_CLIENT_SECRET')
+			.required()
+			.asString();
+		this.valorantApiKey = env.get('VALORANT_API_KEY').required().asString();
 
-		this.botAuthorizationMode = env.get('BOT_AUTHORIZATION_MODE').default('false').asBool()
+		this.botAuthorizationMode = env
+			.get('BOT_AUTHORIZATION_MODE')
+			.default('false')
+			.asBool();
 
-		this.redisUrl = env.get('REDIS_URL').required().asString()
-		this.sessionSecret = env.get('SESSION_SECRET').required().asString()
-		this.sessionTtlMs = env.get('SESSION_TTL_MS').default('86400000').asIntPositive()
+		this.redisUrl = env.get('REDIS_URL').required().asString();
+		this.sessionSecret = env.get('SESSION_SECRET').required().asString();
+		this.sessionTtlMs = env
+			.get('SESSION_TTL_MS')
+			.default('86400000')
+			.asIntPositive();
 
 		this.dbHost = env.get('DB_HOST').required().asString();
 		this.dbUser = env.get('DB_USER').required().asString();
@@ -40,15 +49,15 @@ class Config {
 	}
 
 	getTwitchClientId() {
-		return this.twitchClientId
+		return this.twitchClientId;
 	}
 
 	getTwitchClientSecret() {
-		return this.twitchClientSecret
+		return this.twitchClientSecret;
 	}
 
 	getValorantApiKey() {
-		return this.valorantApiKey
+		return this.valorantApiKey;
 	}
 
 	getBotAuthorizationMode() {
@@ -56,15 +65,15 @@ class Config {
 	}
 
 	getRedisUrl() {
-		return this.redisUrl
+		return this.redisUrl;
 	}
 
 	getSessionSecret() {
-		return this.sessionSecret
+		return this.sessionSecret;
 	}
 
 	getSessionTtlMs() {
-		return this.sessionTtlMs
+		return this.sessionTtlMs;
 	}
 
 	getDbHost() {

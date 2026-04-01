@@ -14,8 +14,7 @@
 	"plugins": ["@typescript-eslint", "prettier", "import"],
 	"parserOptions": {
 		"ecmaVersion": 12,
-		"project": "./tsconfig.json",
-		"tsconfigRootDir": "."
+		"project": "./tsconfig.json"
 	},
 	"settings": {
 		"import/resolver": {

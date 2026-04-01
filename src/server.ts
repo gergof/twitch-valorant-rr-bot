@@ -1,31 +1,33 @@
-import Fastify from "fastify";
-import FastifyCookie from "@fastify/cookie";
-import FastifyFormbody from "@fastify/formbody";
-import FastifySession from "@fastify/session";
-import FastifyView from "@fastify/view";
-import { RedisStore } from "connect-redis";
-import Ejs from 'ejs'
-import FastifyStatic from "@fastify/static";
-import path from "node:path";
-import url from "node:url";
-import { createClient } from "redis";
-import Config from "./Config.js";
-import logger from "./logger.js";
+import path from 'node:path';
+import url from 'node:url';
+
+import FastifyCookie from '@fastify/cookie';
+import FastifyFormbody from '@fastify/formbody';
+import FastifySession from '@fastify/session';
+import FastifyStatic from '@fastify/static';
+import FastifyView from '@fastify/view';
+import { RedisStore } from 'connect-redis';
+import Ejs from 'ejs';
+import Fastify from 'fastify';
+import { createClient } from 'redis';
+
+import Config from './Config.js';
+import logger from './logger.js';
 
 const createServer = async (config: Config) => {
-	const server = Fastify({logger: true});
+	const server = Fastify({ logger: true });
 	const redisClient = createClient({
 		url: config.getRedisUrl()
 	});
 
-	logger.info('Connecting to Redis')
+	logger.info('Connecting to Redis');
 	await redisClient.connect();
-	logger.info('Connected to Redis')
+	logger.info('Connected to Redis');
 
 	server.addHook('onClose', async () => {
-		logger.info('Closing Redis connection')
+		logger.info('Closing Redis connection');
 		await redisClient.quit();
-	})
+	});
 
 	server.register(FastifyCookie);
 	server.register(FastifyFormbody);
@@ -50,25 +52,25 @@ const createServer = async (config: Config) => {
 	server.register(FastifyView, {
 		root: path.join(
 			path.dirname(url.fileURLToPath(import.meta.url)),
-			'routes/views'	
+			'routes/views'
 		),
 		engine: {
 			ejs: Ejs
 		}
-	})
+	});
 
 	server.register(FastifyStatic, {
 		root: path.join(
 			path.dirname(url.fileURLToPath(import.meta.url)),
-			'static'	
+			'static'
 		),
 		prefix: '/static/'
-	})
+	});
 
-	logger.info('HTTP server plugins registered')
+	logger.info('HTTP server plugins registered');
 
 	return server;
-}
+};
 
 export type Server = Awaited<ReturnType<typeof createServer>>;
 

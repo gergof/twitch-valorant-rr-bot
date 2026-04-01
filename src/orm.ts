@@ -1,7 +1,8 @@
-import { MikroORM } from "@mikro-orm/postgresql";
-import Config from "./Config.js";
-import models from "./models/index.js";
-import { Migrator } from "@mikro-orm/migrations";
+import { Migrator } from '@mikro-orm/migrations';
+import { MikroORM } from '@mikro-orm/postgresql';
+
+import Config from './Config.js';
+import models from './models/index.js';
 
 const createOrm = (config: Config) => {
 	return new MikroORM({
@@ -11,9 +12,9 @@ const createOrm = (config: Config) => {
 		host: config.getDbHost(),
 		user: config.getDbUser(),
 		password: config.getDbPassword()
-	})
-}
+	});
+};
 
-export type Orm = ReturnType<typeof createOrm>
+export type Orm = ReturnType<typeof createOrm>;
 
 export default createOrm;
