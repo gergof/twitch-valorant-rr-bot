@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.5](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.4...v1.0.5) (2026-04-01)
+
+
+### Build/CI
+
+* Own application code by user ([5e3476a](https://github.com/gergof/twitch-valorant-rr-bot/commit/5e3476a74e3f08d6d6375764cf304524ece642a5))
+
 ## [1.0.4](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.3...v1.0.4) (2026-04-01)
 
 
