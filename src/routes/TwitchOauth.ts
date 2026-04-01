@@ -15,6 +15,7 @@ type QuerystringType = Static<typeof Querystring>
 
 const TwitchOauth = (server: Server, app: App) => {
 	server.get('/api/oauth/twitch-authorize', async (req, resp) => {
+		logger.info('Redirecting user to Twitch authorization')
 		return resp.redirect(app.getAuthorizationUrl());
 	})
 
@@ -24,12 +25,17 @@ const TwitchOauth = (server: Server, app: App) => {
 		}
 	}, async (req, resp) => {
 		if(req.query.error) {
+			logger.warn('Twitch OAuth callback returned error', {
+				error: req.query.error,
+				errorDescription: req.query.error_description
+			})
 			return resp.view('oauth-error', {
 				errorDescription: req.query.error_description ?? req.query.error
 			})
 		}
 
 		if(!req.query.code) {
+			logger.warn('Twitch OAuth callback missing authorization code')
 			return resp.view('oauth-error', {
 				errorDescription: 'Missing authorization code.'
 			})
@@ -41,9 +47,16 @@ const TwitchOauth = (server: Server, app: App) => {
 			await req.session.regenerate()
 			req.session.channel = channel;
 			await req.session.save()
+			logger.info('User logged in through Twitch OAuth', {
+				channelId: channel.id,
+				twitchId: channel.twitchId
+			})
 
 			return resp.redirect('/dashboard')
-		} catch {
+		} catch (error) {
+			logger.error('Twitch OAuth callback failed', {
+				error: error instanceof Error ? error.message : String(error)
+			})
 			return resp.view('oauth-error', {
 				errorDescription: 'Authentication failed. Please try again.'
 			})
@@ -56,7 +69,10 @@ const TwitchOauth = (server: Server, app: App) => {
 		}
 	}, async req => {
 		if(req.query.error) {
-			logger.info('Bot authorization failed')
+			logger.warn('Bot authorization callback returned error', {
+				error: req.query.error,
+				errorDescription: req.query.error_description
+			})
 		}
 
 		if(!req.query.code || !req.query.state) {
@@ -64,6 +80,7 @@ const TwitchOauth = (server: Server, app: App) => {
 		}
 
 		await app.authorizeBotUser(req.query.code, req.query.state)
+		logger.info('Bot authorization callback completed successfully')
 
 		return 'Authorization completed'
 	})

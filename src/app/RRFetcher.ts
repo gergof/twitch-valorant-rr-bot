@@ -2,6 +2,7 @@ import got from "got";
 import Config from "../Config.js";
 import { LastMatchStatus } from "../types.js";
 import { VALORANT_API_BASE } from "../constants.js";
+import logger from "../logger.js";
 
 class RRFetcher {
 	private config: Config;
@@ -49,6 +50,11 @@ class RRFetcher {
 			if (error instanceof Error && error.message === 'Invalid user') {
 				throw error;
 			}
+
+			logger.warn('Failed to fetch RR status', {
+				valorantAccount,
+				error: error instanceof Error ? error.message : String(error)
+			})
 
 			return null;
 		}

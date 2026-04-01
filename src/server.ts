@@ -10,6 +10,7 @@ import path from "node:path";
 import url from "node:url";
 import { createClient } from "redis";
 import Config from "./Config.js";
+import logger from "./logger.js";
 
 const createServer = async (config: Config) => {
 	const server = Fastify({logger: true});
@@ -17,9 +18,12 @@ const createServer = async (config: Config) => {
 		url: config.getRedisUrl()
 	});
 
+	logger.info('Connecting to Redis')
 	await redisClient.connect();
+	logger.info('Connected to Redis')
 
 	server.addHook('onClose', async () => {
+		logger.info('Closing Redis connection')
 		await redisClient.quit();
 	})
 
@@ -60,6 +64,8 @@ const createServer = async (config: Config) => {
 		),
 		prefix: '/static/'
 	})
+
+	logger.info('HTTP server plugins registered')
 
 	return server;
 }

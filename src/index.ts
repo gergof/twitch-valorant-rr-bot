@@ -16,6 +16,35 @@ const main = async () => {
 	const app = new App(config, orm);
 	const server = await createServer(config)
 
+	let shuttingDown = false
+	const shutdown = async (signal: 'SIGINT' | 'SIGTERM') => {
+		if (shuttingDown) {
+			return
+		}
+
+		shuttingDown = true
+		logger.info('Received shutdown signal', { signal })
+
+		try {
+			await server.close()
+			logger.info('Graceful shutdown completed', { signal })
+			process.exit(0)
+		} catch (error) {
+			logger.error('Graceful shutdown failed', {
+				signal,
+				error: error instanceof Error ? error.message : String(error)
+			})
+			process.exit(1)
+		}
+	}
+
+	process.once('SIGINT', () => {
+		void shutdown('SIGINT')
+	})
+	process.once('SIGTERM', () => {
+		void shutdown('SIGTERM')
+	})
+
 	if(config.getBotAuthorizationMode()) {
 		logger.info(`Bot authorization URL: ${app.getBotUserAuthorizationUrl()}`)
 	} else {

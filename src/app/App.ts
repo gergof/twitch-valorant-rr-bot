@@ -47,12 +47,16 @@ class App {
 	}
 
 	public async initialize(): Promise<void> {
+		logger.info('Initializing application services')
 		await this.liveMonitor.initialize();
+		logger.info('Application services initialized')
 	}
 
 	public async shutdown(): Promise<void> {
+		logger.info('Shutting down application services')
 		await this.liveMonitor.shutdown();
 		this.taskRunner.stopTasks();
+		logger.info('Application services shut down')
 	}
 
 	private getBotAuthorizationRedirectUrl() {
@@ -65,6 +69,7 @@ class App {
 
 	public getBotUserAuthorizationUrl(): string {
 		this.botAuthorizationState = nanoid()
+		logger.info('Generated bot authorization state')
 
 		const url = new URL(TWITCH_AUTHORIZATION_URL)
 		url.searchParams.set('client_id', this.config.getTwitchClientId())
@@ -86,6 +91,8 @@ class App {
 		if(state != this.botAuthorizationState) {
 			throw new HttpErrors.BadRequest('Invalid authorization state')
 		}
+
+		logger.info('Authorizing bot user with Twitch')
 
 		const tokenResponse = await got.post(TWITCH_TOKEN_URL, {
 			form: {
@@ -128,6 +135,9 @@ class App {
 		}
 
 		await em.flush()
+		logger.info('Bot user authorized', {
+			twitchId: validateResponse.user_id
+		})
 	}
 
 	public getAuthorizationUrl(): string {
@@ -142,6 +152,7 @@ class App {
 
 	public async authorizeUser(code: string): Promise<Channel> {
 		const em = this.orm.em.fork();
+		logger.info('Authorizing broadcaster user with Twitch')
 
 		const tokenResponse = await got.post(TWITCH_TOKEN_URL, {
 			form: {
@@ -210,6 +221,11 @@ class App {
 
 		await em.flush();
 
+		logger.info('Broadcaster user authorized', {
+			channelId: channel.id,
+			twitchId: channel.twitchId
+		})
+
 		return channel;
 	}
 
@@ -222,11 +238,23 @@ class App {
 	): Promise<Channel> {
 		const em = this.orm.em.fork();
 		const channel = await em.findOneOrFail(Channel, channelId)
+		const previousState = {
+			active: channel.active,
+			valorantAccount: channel.valorantAccount
+		}
 
 		channel.active = settings.active
 		channel.valorantAccount = settings.valorantAccount || null
 
 		await em.flush()
+		logger.info('Channel settings updated', {
+			channelId: channel.id,
+			twitchId: channel.twitchId,
+			previousActive: previousState.active,
+			newActive: channel.active,
+			previousValorantAccount: previousState.valorantAccount,
+			newValorantAccount: channel.valorantAccount
+		})
 		await this.liveMonitor.syncChannel(channel)
 
 		return channel
@@ -348,11 +376,20 @@ class App {
 				`Last match: ${match.rrChange > 0 ? '+' : ''}${match.rrChange}RR on ${match.map}. Currently ${match.rank} (${match.rr}RR). This stream: ${streamAggregation.matchCount} match${streamAggregation.matchCount > 1 ? 'es' : ''} with a total of ${streamAggregation.totalRr > 0 ? '+' : ''}${streamAggregation.totalRr}RR.`
 			)
 		})
+		logger.info('Sent RR change message', {
+			channelId: channel.id,
+			streamId: stream.id,
+			matchId: match.matchId
+		})
 	}
 
 	public async sendWelcomeMessage(channel: Channel): Promise<void> {
 		await this.twitchApi.asUser(await this.getBotTwitchId(), async ctx => {
 			await ctx.chat.sendChatMessage(channel.twitchId, 'Welcome! Send !rr or !rank to see current rank.')
+		})
+		logger.info('Sent welcome message', {
+			channelId: channel.id,
+			twitchId: channel.twitchId
 		})
 	}
 
@@ -365,6 +402,11 @@ class App {
 
 		await this.twitchApi.asUser(await this.getBotTwitchId(), async ctx => {
 			await ctx.chat.sendChatMessage(channel.twitchId, lastMatch ? `Currently ${lastMatch.rank} (${lastMatch.rr}RR).` : 'Rank not available yet.')
+		})
+		logger.info('Sent RR status message', {
+			channelId: channel.id,
+			twitchId: channel.twitchId,
+			hasMatch: !!lastMatch
 		})
 	}
 }

@@ -60,6 +60,7 @@ class LiveMonitor {
 
 	public async initialize(): Promise<void> {
 		const em = this.app.orm.em.fork();
+		logger.info('Initializing live monitor')
 
 		const credentials = await em.findOne(Credential, {type: 'bot'})
 
@@ -75,13 +76,16 @@ class LiveMonitor {
 		} as any)
 
 		this.listener.start();
+		logger.info('EventSub listener started')
 
 		await this.loadChannels();
 		await this.reconcileEligibleChannels(false);
 		this.startReconcileTask();
+		logger.info('Live monitor initialized')
 	}
 
 	public async shutdown(): Promise<void> {
+		logger.info('Shutting down live monitor')
 		this.scheduler.stop()
 		for (const subscription of this.subscriptions.values()) {
 			subscription.online.stop()
@@ -91,6 +95,7 @@ class LiveMonitor {
 		this.subscriptions.clear()
 		this.liveChannels.clear()
 		this.listener.stop()
+		logger.info('Live monitor shut down')
 	}
 
 	private async loadChannels(): Promise<void> {
@@ -105,6 +110,9 @@ class LiveMonitor {
 
 		channels.forEach(channel => {
 			this.addChannel(channel)
+		})
+		logger.info('Loaded eligible channels for live monitor', {
+			channelCount: channels.length
 		})
 	}
 
@@ -169,6 +177,11 @@ class LiveMonitor {
 			return;
 		}
 
+		logger.info('Registering live monitor subscriptions for channel', {
+			channelId: channel.id,
+			twitchId: channel.twitchId
+		})
+
 		this.subscriptions.set(channel.id, {
 			channel,
 				online: this.listener.onStreamOnline(channel.twitchId, async event => {
@@ -209,6 +222,10 @@ class LiveMonitor {
 		this.app.taskRunner.stopRRUpdateTask(channel)
 		this.subscriptions.delete(channel.id)
 		await this.handleOffline(channel)
+		logger.info('Removed channel from live monitor', {
+			channelId: channel.id,
+			twitchId: channel.twitchId
+		})
 	}
 
 	public async syncChannel(channel: Channel): Promise<void> {
@@ -261,11 +278,25 @@ class LiveMonitor {
 
 		await em.flush();
 
+		logger.info('Upserted live stream', {
+			channelId: channel.id,
+			twitchId: channel.twitchId,
+			streamTwitchId: liveStream.id,
+			streamId: stream.id
+		})
+
 		return stream
 	}
 
 	private async handleOnline(channel: Channel, liveStream: HelixStream, sendWelcome: boolean): Promise<void> {
 		if(liveStream.type != 'live' || liveStream.gameId != TWITCH_VALORANT_GAME_ID) {
+			logger.info('Ignoring non-live or non-Valorant stream state', {
+				channelId: channel.id,
+				twitchId: channel.twitchId,
+				streamTwitchId: liveStream.id,
+				streamType: liveStream.type,
+				gameId: liveStream.gameId
+			})
 			await this.handleOffline(channel)
 			return;
 		}
@@ -275,6 +306,13 @@ class LiveMonitor {
 
 		const stream = await this.upsertLiveStream(channel, liveStream)
 		this.app.taskRunner.startRRUpdateTask(channel, stream)
+		logger.info('Channel marked live', {
+			channelId: channel.id,
+			twitchId: channel.twitchId,
+			streamId: stream.id,
+			streamTwitchId: stream.twitchId,
+			sendWelcome
+		})
 
 		if(!wasLive && sendWelcome) {
 			await this.app.sendWelcomeMessage(channel);
@@ -293,6 +331,10 @@ class LiveMonitor {
 			}, {
 				endedAt: new Date()
 			})
+		logger.info('Channel marked offline', {
+			channelId: channel.id,
+			twitchId: channel.twitchId
+		})
 	}
 
 	private async reconcileChannel(channel: Channel, sendWelcome: boolean): Promise<void> {

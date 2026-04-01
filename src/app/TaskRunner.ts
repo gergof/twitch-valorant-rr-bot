@@ -17,6 +17,7 @@ class TaskRunner {
 
 	public stopTasks(): void {
 		this.scheduler.stop();
+		logger.info('Stopped all RR update tasks')
 	}
 
 	private getRRUpdateTaskKey(channel: Channel): string {
@@ -32,15 +33,33 @@ class TaskRunner {
 		}
 
 		this.scheduler.removeById(key)
+		logger.info('Stopped RR update task', {
+			channelId: channel.id,
+			twitchId: channel.twitchId
+		})
 	}
 
 	public startRRUpdateTask(channel: Channel, stream: Stream): void {
 		this.stopRRUpdateTask(channel);
 
 		const key = this.getRRUpdateTaskKey(channel);
+		const initialDelayMs = Math.floor(Math.random() * 60_000)
+
+		logger.info('Scheduling RR update task', {
+			channelId: channel.id,
+			twitchId: channel.twitchId,
+			streamId: stream.id,
+			streamTwitchId: stream.twitchId,
+			initialDelayMs
+		})
 
 		this.pendingTasks.set(key, setTimeout(() => {
 			this.pendingTasks.delete(key);
+				logger.info('Starting RR update interval job', {
+					channelId: channel.id,
+					twitchId: channel.twitchId,
+					streamId: stream.id
+				})
 				this.scheduler.addSimpleIntervalJob(
 					new SimpleIntervalJob(
 					{seconds: 60, runImmediately: true},
@@ -73,9 +92,9 @@ class TaskRunner {
 						last: 1
 					})
 
-					if(lastMatchInDb?.matchId != lastMatch.matchId) {
-						// store new match
-						const match = em.create(Match, {
+						if(lastMatchInDb?.matchId != lastMatch.matchId) {
+							// store new match
+							const match = em.create(Match, {
 							matchId: lastMatch.matchId,
 							rank: lastMatch.rank,
 							rr: lastMatch.rr,
@@ -83,8 +102,13 @@ class TaskRunner {
 							map: lastMatch.map,
 							stream: stream,
 							channel: channel
-						})
-						await em.flush()
+							})
+							await em.flush()
+							logger.info('Stored new match from RR poll', {
+								channelId: channel.id,
+								streamId: stream.id,
+								matchId: match.matchId
+							})
 
 						await this.app.sendRRChangeMessage(channel, stream, match)
 						}
@@ -101,7 +125,7 @@ class TaskRunner {
 				}
 				)
 			)
-		}, Math.floor(Math.random() * 60_000)))
+		}, initialDelayMs))
 	}
 }
 
