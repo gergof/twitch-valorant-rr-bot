@@ -13,6 +13,7 @@
     "lint": "esw --color --ext .ts src",
     "lint:fix": "esw --color --fix --ext .ts src",
     "lint:watch": "esw --color --fix --watch --cache --ext .ts src",
+    "migrate": "mikro-orm migration:up",
     "release": "commit-and-tag-version"
   },
   "repository": {

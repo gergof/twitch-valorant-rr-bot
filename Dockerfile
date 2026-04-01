@@ -27,4 +27,4 @@ COPY src ./src
 COPY --from=build /app/dist ./dist
 USER node
 EXPOSE 3000
-CMD ["sh", "-c", "npx mikro-orm migration:up && node dist/index.js"]
+CMD ["sh", "-c", "npm run migrate && node dist/index.js"]
