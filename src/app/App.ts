@@ -76,6 +76,10 @@ class App {
 	}
 
 	public async authorizeBotUser(code: string, state: string): Promise<void> {
+		if(!this.config.getBotAuthorizationMode()){
+			throw new HttpErrors.BadRequest('Bot authorization disabled')
+		}
+
 		const em = this.orm.em.fork();
 
 		if(state != this.botAuthorizationState) {

@@ -1,9 +1,9 @@
 import { Migration } from '@mikro-orm/migrations';
 
-export class Migration20260331084818 extends Migration {
+export class Migration20260401084117 extends Migration {
 
   override up(): void | Promise<void> {
-    this.addSql(`create table "credential" ("id" serial primary key, "type" text not null default 'broadcaster', "twitch_id" varchar(50) not null, "access_token" varchar(50) not null, "refresh_token" varchar(50) not null, "expires_at" timestamptz not null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`);
+    this.addSql(`create table "credential" ("id" serial primary key, "type" text not null default 'broadcaster', "twitch_id" varchar(50) not null, "access_token" varchar(255) not null, "refresh_token" varchar(255) not null, "expires_at" timestamptz not null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`);
     this.addSql(`create index "credential_twitch_id_index" on "credential" ("twitch_id");`);
     this.addSql(`alter table "credential" add constraint "credential_twitch_id_unique" unique ("twitch_id");`);
 
@@ -13,8 +13,11 @@ export class Migration20260331084818 extends Migration {
     this.addSql(`alter table "channel" add constraint "channel_credential_id_unique" unique ("credential_id");`);
 
     this.addSql(`create table "stream" ("id" serial primary key, "twitch_id" varchar(50) not null, "title" varchar(255) not null, "started_at" timestamptz not null, "ended_at" timestamptz null, "channel_id" int not null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`);
+    this.addSql(`create index "stream_twitch_id_index" on "stream" ("twitch_id");`);
+    this.addSql(`alter table "stream" add constraint "stream_twitch_id_unique" unique ("twitch_id");`);
 
     this.addSql(`create table "match" ("id" serial primary key, "match_id" varchar(50) not null, "rank" varchar(30) not null, "rr" smallint not null, "rr_change" smallint not null, "map" varchar(50) not null, "stream_id" int not null, "channel_id" int not null, "created_at" timestamptz not null, "updated_at" timestamptz not null);`);
+    this.addSql(`alter table "match" add constraint "match_match_id_unique" unique ("match_id");`);
 
     this.addSql(`alter table "credential" add constraint "credential_type_check" check ("type" in ('bot', 'broadcaster'));`);
 

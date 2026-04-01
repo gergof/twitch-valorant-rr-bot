@@ -10,7 +10,7 @@ const createOrm = (config: Config) => {
 		dbName: config.getDbName(),
 		host: config.getDbHost(),
 		user: config.getDbUser(),
-		password: config.getDbUser()
+		password: config.getDbPassword()
 	})
 }
 

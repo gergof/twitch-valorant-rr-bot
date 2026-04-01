@@ -6,7 +6,7 @@ const MatchSchema = defineEntity({
 	name: 'Match',
 	properties: {
 		id: p.integer().unsigned().autoincrement().primary(),
-		matchId: p.string().length(50),
+		matchId: p.string().length(50).unique(),
 		rank: p.string().length(30),
 		rr: p.smallint(),
 		rrChange: p.smallint(),

@@ -1,0 +1,12 @@
+<%- include('layouts/head') -%>
+
+<main class="auth-shell">
+	<section class="auth-card">
+		<p class="eyebrow">Authentication Error</p>
+		<h1>Sign-in failed</h1>
+		<p class="auth-copy"><%= errorDescription %></p>
+		<a class="primary-button auth-button" href="/dashboard/login">Back to login</a>
+	</section>
+</main>
+
+<%- include('layouts/foot') -%>

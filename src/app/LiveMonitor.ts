@@ -160,7 +160,7 @@ class LiveMonitor {
 		})
 	}
 
-	private removeChannel(channel: Channel): void {
+	private async removeChannel(channel: Channel): Promise<void> {
 		const subscription = this.subscriptions.get(channel.id)
 
 		if(subscription) {
@@ -172,13 +172,14 @@ class LiveMonitor {
 		this.liveChannels.delete(channel.id)
 		this.app.taskRunner.stopRRUpdateTask(channel)
 		this.subscriptions.delete(channel.id)
+		await this.handleOffline(channel)
 	}
 
 	public async syncChannel(channel: Channel): Promise<void> {
 		const isEligible = channel.active && channel.valorantAccount != null;
 
 		if(this.subscriptions.has(channel.id) && !isEligible) {
-			this.removeChannel(channel);
+			await this.removeChannel(channel);
 			return;
 		}
 

@@ -8,7 +8,8 @@ import Channel from "../models/Channel.js";
 const Querystring = Type.Object({
 	code: Type.Optional(Type.String()),
 	state: Type.Optional(Type.String()),
-	error: Type.Optional(Type.String())
+	error: Type.Optional(Type.String()),
+	error_description: Type.Optional(Type.String())
 })
 type QuerystringType = Static<typeof Querystring>
 
@@ -23,11 +24,15 @@ const TwitchOauth = (server: Server, app: App) => {
 		}
 	}, async (req, resp) => {
 		if(req.query.error) {
-			return 'had error'
+			return resp.view('oauth-error', {
+				errorDescription: req.query.error_description ?? req.query.error
+			})
 		}
 
 		if(!req.query.code) {
-			return 'no code'
+			return resp.view('oauth-error', {
+				errorDescription: 'Missing authorization code.'
+			})
 		}
 
 		try {
@@ -39,7 +44,9 @@ const TwitchOauth = (server: Server, app: App) => {
 
 			return resp.redirect('/dashboard')
 		} catch {
-			return 'internal error'
+			return resp.view('oauth-error', {
+				errorDescription: 'Authentication failed. Please try again.'
+			})
 		}
 	})
 
@@ -53,7 +60,7 @@ const TwitchOauth = (server: Server, app: App) => {
 		}
 
 		if(!req.query.code || !req.query.state) {
-			return HttpErrors.BadRequest('Malformed bot authorization URL')
+			throw new HttpErrors.BadRequest('Malformed bot authorization URL')
 		}
 
 		await app.authorizeBotUser(req.query.code, req.query.state)

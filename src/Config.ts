@@ -5,6 +5,8 @@ class Config {
 	private twitchClientSecret: string;
 	private valorantApiKey: string;
 
+	private botAuthorizationMode: boolean;
+
 	private redisUrl: string;
 	private sessionSecret: string;
 	private sessionTtlMs: number;
@@ -21,6 +23,8 @@ class Config {
 		this.twitchClientId = env.get('TWITCH_CLIENT_ID').required().asString()
 		this.twitchClientSecret = env.get('TWITCH_CLIENT_SECRET').required().asString()
 		this.valorantApiKey = env.get('VALORANT_API_KEY').required().asString()
+
+		this.botAuthorizationMode = env.get('BOT_AUTHORIZATION_MODE').default('false').asBool()
 
 		this.redisUrl = env.get('REDIS_URL').required().asString()
 		this.sessionSecret = env.get('SESSION_SECRET').required().asString()
@@ -45,6 +49,10 @@ class Config {
 
 	getValorantApiKey() {
 		return this.valorantApiKey
+	}
+
+	getBotAuthorizationMode() {
+		return this.botAuthorizationMode;
 	}
 
 	getRedisUrl() {

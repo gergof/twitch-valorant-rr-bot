@@ -39,6 +39,7 @@ class TaskRunner {
 		const key = this.getRRUpdateTaskKey(channel);
 
 		this.pendingTasks.set(key, setTimeout(() => {
+			this.pendingTasks.delete(key);
 			this.scheduler.addSimpleIntervalJob(
 				new SimpleIntervalJob(
 				{seconds: 60, runImmediately: true},

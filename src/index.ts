@@ -16,10 +16,14 @@ const main = async () => {
 	const app = new App(config, orm);
 	const server = await createServer(config)
 
-	await app.initialize()
-	server.addHook('onClose', async () => {
-		await app.shutdown()
-	})
+	if(config.getBotAuthorizationMode()) {
+		logger.info(`Bot authorization URL: ${app.getBotUserAuthorizationUrl()}`)
+	} else {
+		await app.initialize()
+		server.addHook('onClose', async () => {
+			await app.shutdown()
+		})
+	}
 
 	registerRoutes(server, app);
 
@@ -28,8 +32,6 @@ const main = async () => {
 		port: config.getPort()
 	})
 	logger.info('Started listening')
-
-	logger.info(`Bot authorization URL: ${app.getBotUserAuthorizationUrl()}`)
 }
 
 main()

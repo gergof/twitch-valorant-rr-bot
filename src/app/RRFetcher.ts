@@ -11,8 +11,12 @@ class RRFetcher {
 	}
 
 	async getLastMatchStatus(valorantAccount: string): Promise<LastMatchStatus | null> {
-		const username = valorantAccount.split('#')[0];
-		const tag = valorantAccount.split('#')[1];
+		const username = valorantAccount.split('#')[0]?.trim();
+		const tag = valorantAccount.split('#')[1]?.trim();
+
+		if(!username || !tag) {
+			throw new Error('Invalid user')
+		}
 
 		const resp = await got.get<{data: {match_id: string, currenttierpatched: string, ranking_in_tier: number, mmr_change_to_last_game: number, map: {name: string}}[]}>(`${VALORANT_API_BASE}/${encodeURIComponent(username)}/${encodeURIComponent(tag)}`, {
 			headers: {
