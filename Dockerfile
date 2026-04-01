@@ -22,8 +22,6 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 RUN npm ci && npm cache clean --force
 COPY mikro-orm.config.ts ./
-COPY tsconfig.json ./
-COPY src ./src
 COPY --from=build /app/dist ./dist
 USER node
 EXPOSE 3000
