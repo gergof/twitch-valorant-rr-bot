@@ -20,8 +20,11 @@ FROM node:22-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci && npm cache clean --force
+COPY mikro-orm.config.ts ./
+COPY tsconfig.json ./
+COPY src ./src
 COPY --from=build /app/dist ./dist
 USER node
 EXPOSE 3000
-CMD ["node", "dist/index.js"]
+CMD ["sh", "-c", "npx mikro-orm migration:up && node dist/index.js"]

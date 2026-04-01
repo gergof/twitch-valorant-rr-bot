@@ -5,199 +5,20 @@
   ],
   "tables": [
     {
-      "name": "credential",
-      "schema": "public",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "unsigned": true,
-          "autoincrement": true,
-          "primary": true,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": "'broadcaster'",
-          "comment": null,
-          "enumItems": [
-            "bot",
-            "broadcaster"
-          ],
-          "mappedType": "enum"
-        },
-        "twitch_id": {
-          "name": "twitch_id",
-          "type": "varchar(50)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 50,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "string"
-        },
-        "access_token": {
-          "name": "access_token",
-          "type": "varchar(255)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 255,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "string"
-        },
-        "refresh_token": {
-          "name": "refresh_token",
-          "type": "varchar(255)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 255,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "string"
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamptz",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 6,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamptz",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 6,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 6,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        }
-      },
-      "indexes": [
-        {
-          "columnNames": [
-            "twitch_id"
-          ],
-          "composite": false,
-          "keyName": "credential_twitch_id_index",
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "twitch_id"
-          ],
-          "composite": false,
-          "keyName": "credential_twitch_id_unique",
-          "constraint": true,
-          "primary": false,
-          "unique": true
-        },
-        {
-          "keyName": "credential_pkey",
-          "columnNames": [
-            "id"
-          ],
-          "composite": false,
-          "constraint": true,
-          "primary": true,
-          "unique": true
-        }
-      ],
-      "checks": [
-        {
-          "name": "credential_type_check",
-          "expression": "\"type\" in ('bot', 'broadcaster')",
-          "definition": "check (\"type\" in ('bot', 'broadcaster'))",
-          "columnName": "type"
-        }
-      ],
-      "foreignKeys": {},
-      "nativeEnums": {}
-    },
-    {
       "name": "channel",
       "schema": "public",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "int4",
           "unsigned": true,
           "autoincrement": true,
           "primary": true,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 32,
+          "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
@@ -210,7 +31,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
+          "unique": true,
           "length": 50,
           "precision": null,
           "scale": null,
@@ -253,7 +74,7 @@
         },
         "active": {
           "name": "active",
-          "type": "boolean",
+          "type": "bool",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -278,22 +99,22 @@
           "length": 150,
           "precision": null,
           "scale": null,
-          "default": "null",
+          "default": null,
           "comment": null,
           "enumItems": [],
           "mappedType": "string"
         },
         "credential_id": {
           "name": "credential_id",
-          "type": "int",
-          "unsigned": true,
+          "type": "int4",
+          "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": false,
+          "unique": true,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 32,
+          "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
@@ -301,7 +122,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz",
+          "type": "timestamptz(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -317,7 +138,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamptz",
+          "type": "timestamptz(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -335,81 +156,102 @@
       "indexes": [
         {
           "columnNames": [
-            "twitch_id"
-          ],
-          "composite": false,
-          "keyName": "channel_twitch_id_index",
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "twitch_id"
-          ],
-          "composite": false,
-          "keyName": "channel_twitch_id_unique",
-          "constraint": true,
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
             "credential_id"
           ],
           "composite": false,
-          "keyName": "channel_credential_id_unique",
           "constraint": true,
-          "primary": false,
-          "unique": true
+          "keyName": "channel_credential_id_unique",
+          "unique": true,
+          "primary": false
         },
         {
-          "keyName": "channel_pkey",
           "columnNames": [
             "id"
           ],
           "composite": false,
+          "constraint": false,
+          "keyName": "channel_pkey",
+          "unique": true,
+          "primary": true
+        },
+        {
+          "columnNames": [
+            "twitch_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "channel_twitch_id_index",
+          "unique": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
+            "twitch_id"
+          ],
+          "composite": false,
           "constraint": true,
-          "primary": true,
-          "unique": true
+          "keyName": "channel_twitch_id_unique",
+          "unique": true,
+          "primary": false
         }
       ],
       "checks": [],
       "foreignKeys": {
         "channel_credential_id_foreign": {
-          "constraintName": "channel_credential_id_foreign",
           "columnNames": [
             "credential_id"
           ],
+          "constraintName": "channel_credential_id_foreign",
           "localTableName": "public.channel",
+          "referencedTableName": "public.credential",
           "referencedColumnNames": [
             "id"
           ],
-          "referencedTableName": "public.credential",
+          "updateRule": "no action",
           "deleteRule": "set null"
         }
       },
-      "nativeEnums": {}
+      "nativeEnums": {},
+      "comment": null
     },
     {
-      "name": "stream",
+      "name": "credential",
       "schema": "public",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "int4",
           "unsigned": true,
           "autoincrement": true,
           "primary": true,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 32,
+          "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
           "mappedType": "integer"
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'broadcaster'",
+          "comment": null,
+          "enumItems": [
+            "bot",
+            "broadcaster"
+          ],
+          "mappedType": "enum"
         },
         "twitch_id": {
           "name": "twitch_id",
@@ -418,7 +260,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
+          "unique": true,
           "length": 50,
           "precision": null,
           "scale": null,
@@ -427,8 +269,8 @@
           "enumItems": [],
           "mappedType": "string"
         },
-        "title": {
-          "name": "title",
+        "access_token": {
+          "name": "access_token",
           "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
@@ -443,9 +285,25 @@
           "enumItems": [],
           "mappedType": "string"
         },
-        "started_at": {
-          "name": "started_at",
-          "type": "timestamptz",
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamptz(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -458,42 +316,10 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
-        },
-        "ended_at": {
-          "name": "ended_at",
-          "type": "timestamptz",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "unique": false,
-          "length": 6,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "channel_id": {
-          "name": "channel_id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "enumItems": [],
-          "mappedType": "integer"
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz",
+          "type": "timestamptz(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -509,7 +335,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamptz",
+          "type": "timestamptz(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -527,50 +353,46 @@
       "indexes": [
         {
           "columnNames": [
-            "twitch_id"
-          ],
-          "composite": false,
-          "keyName": "stream_twitch_id_index",
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "twitch_id"
-          ],
-          "composite": false,
-          "keyName": "stream_twitch_id_unique",
-          "constraint": true,
-          "primary": false,
-          "unique": true
-        },
-        {
-          "keyName": "stream_pkey",
-          "columnNames": [
             "id"
           ],
           "composite": false,
+          "constraint": false,
+          "keyName": "credential_pkey",
+          "unique": true,
+          "primary": true
+        },
+        {
+          "columnNames": [
+            "twitch_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "credential_twitch_id_index",
+          "unique": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
+            "twitch_id"
+          ],
+          "composite": false,
           "constraint": true,
-          "primary": true,
-          "unique": true
+          "keyName": "credential_twitch_id_unique",
+          "unique": true,
+          "primary": false
         }
       ],
-      "checks": [],
-      "foreignKeys": {
-        "stream_channel_id_foreign": {
-          "constraintName": "stream_channel_id_foreign",
-          "columnNames": [
-            "channel_id"
-          ],
-          "localTableName": "public.stream",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "public.channel"
+      "checks": [
+        {
+          "name": "credential_type_check",
+          "columnName": "type",
+          "definition": "check (\"type\" in ('bot', 'broadcaster'))",
+          "expression": "\"type\" in ('bot', 'broadcaster')"
         }
-      },
-      "nativeEnums": {}
+      ],
+      "foreignKeys": {},
+      "nativeEnums": {},
+      "comment": null
     },
     {
       "name": "match",
@@ -578,15 +400,15 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "int4",
           "unsigned": true,
           "autoincrement": true,
           "primary": true,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 32,
+          "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
@@ -599,7 +421,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
+          "unique": true,
           "length": 50,
           "precision": null,
           "scale": null,
@@ -626,15 +448,15 @@
         },
         "rr": {
           "name": "rr",
-          "type": "smallint",
+          "type": "int2",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 16,
+          "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
@@ -642,15 +464,15 @@
         },
         "rr_change": {
           "name": "rr_change",
-          "type": "smallint",
+          "type": "int2",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 16,
+          "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
@@ -674,15 +496,15 @@
         },
         "stream_id": {
           "name": "stream_id",
-          "type": "int",
-          "unsigned": true,
+          "type": "int4",
+          "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 32,
+          "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
@@ -690,15 +512,15 @@
         },
         "channel_id": {
           "name": "channel_id",
-          "type": "int",
-          "unsigned": true,
+          "type": "int4",
+          "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": null,
-          "scale": null,
+          "precision": 32,
+          "scale": 0,
           "default": null,
           "comment": null,
           "enumItems": [],
@@ -706,7 +528,7 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz",
+          "type": "timestamptz(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -722,7 +544,7 @@
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamptz",
+          "type": "timestamptz(6)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -743,48 +565,237 @@
             "match_id"
           ],
           "composite": false,
-          "keyName": "match_match_id_unique",
           "constraint": true,
-          "primary": false,
-          "unique": true
+          "keyName": "match_match_id_unique",
+          "unique": true,
+          "primary": false
         },
         {
-          "keyName": "match_pkey",
           "columnNames": [
             "id"
           ],
           "composite": false,
-          "constraint": true,
-          "primary": true,
-          "unique": true
+          "constraint": false,
+          "keyName": "match_pkey",
+          "unique": true,
+          "primary": true
         }
       ],
       "checks": [],
       "foreignKeys": {
-        "match_stream_id_foreign": {
-          "constraintName": "match_stream_id_foreign",
-          "columnNames": [
-            "stream_id"
-          ],
-          "localTableName": "public.match",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "public.stream"
-        },
         "match_channel_id_foreign": {
-          "constraintName": "match_channel_id_foreign",
           "columnNames": [
             "channel_id"
           ],
+          "constraintName": "match_channel_id_foreign",
           "localTableName": "public.match",
+          "referencedTableName": "public.channel",
           "referencedColumnNames": [
             "id"
           ],
-          "referencedTableName": "public.channel"
+          "updateRule": "no action",
+          "deleteRule": "no action"
+        },
+        "match_stream_id_foreign": {
+          "columnNames": [
+            "stream_id"
+          ],
+          "constraintName": "match_stream_id_foreign",
+          "localTableName": "public.match",
+          "referencedTableName": "public.stream",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "updateRule": "no action",
+          "deleteRule": "no action"
         }
       },
-      "nativeEnums": {}
+      "nativeEnums": {},
+      "comment": null
+    },
+    {
+      "name": "stream",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int4",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "twitch_id": {
+          "name": "twitch_id",
+          "type": "varchar(50)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": 50,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "channel_id": {
+          "name": "channel_id",
+          "type": "int4",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "stream_pkey",
+          "unique": true,
+          "primary": true
+        },
+        {
+          "columnNames": [
+            "twitch_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "stream_twitch_id_index",
+          "unique": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
+            "twitch_id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "stream_twitch_id_unique",
+          "unique": true,
+          "primary": false
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "stream_channel_id_foreign": {
+          "columnNames": [
+            "channel_id"
+          ],
+          "constraintName": "stream_channel_id_foreign",
+          "localTableName": "public.stream",
+          "referencedTableName": "public.channel",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "updateRule": "no action",
+          "deleteRule": "no action"
+        }
+      },
+      "nativeEnums": {},
+      "comment": null
     }
   ],
   "views": [],

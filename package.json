@@ -54,7 +54,7 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
-    "@mikro-orm/cli": "^7.0.6",
+    "@mikro-orm/cli": "^7.0.7",
     "@types/ejs": "^3.1.5",
     "@types/http-errors": "^2.0.5",
     "@types/node": "^25.5.0",
