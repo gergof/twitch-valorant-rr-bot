@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Twitch Valorant RR Bot</title>
+		<link rel="icon" href="/static/icon.png" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" />
+		<style>
+			:root {
+				--bg: #f4f1f2;
+				--surface: rgba(255, 255, 255, 0.78);
+				--surface-strong: rgba(255, 255, 255, 0.92);
+				--line: rgba(23, 25, 34, 0.1);
+				--text: #171922;
+				--text-soft: #5e6475;
+				--accent: #ff4149;
+				--accent-strong: #db2736;
+				--accent-soft: rgba(255, 65, 73, 0.14);
+				--shadow: 0 24px 60px rgba(17, 19, 27, 0.14);
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				min-height: 100vh;
+				font-family: "IBM Plex Sans", sans-serif;
+				color: var(--text);
+				background:
+					radial-gradient(circle at top left, rgba(255, 65, 73, 0.16), transparent 26%),
+					radial-gradient(circle at top right, rgba(26, 29, 42, 0.14), transparent 24%),
+					linear-gradient(180deg, #f9f7f8 0%, #ece8ea 100%);
+			}
+
+			a {
+				color: inherit;
+				text-decoration: none;
+			}
+
+			.page {
+				width: min(1120px, calc(100% - 2rem));
+				margin: 0 auto;
+				padding: 2rem 0 4rem;
+			}
+
+			.header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 1rem;
+				padding: 0.4rem 0 1.5rem;
+			}
+
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 0.9rem;
+			}
+
+			.brand img {
+				width: 3rem;
+				height: 3rem;
+				border-radius: 0.8rem;
+				box-shadow: 0 14px 28px rgba(255, 65, 73, 0.24);
+			}
+
+			.brand-copy {
+				display: grid;
+				gap: 0.15rem;
+			}
+
+			.brand-copy strong {
+				font-family: "Space Grotesk", sans-serif;
+				font-size: 1.15rem;
+				letter-spacing: 0.02em;
+			}
+
+			.brand-copy span {
+				color: var(--text-soft);
+				font-size: 0.95rem;
+			}
+
+			.hero {
+				display: grid;
+				grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.9fr);
+				gap: 1.25rem;
+				align-items: stretch;
+			}
+
+			.hero-panel,
+			.card {
+				border: 1px solid rgba(255, 255, 255, 0.8);
+				border-radius: 30px;
+				box-shadow: var(--shadow);
+				overflow: hidden;
+			}
+
+			.hero-panel {
+				padding: 2.4rem;
+				background:
+					linear-gradient(135deg, rgba(17, 19, 27, 0.97), rgba(33, 36, 48, 0.92)),
+					linear-gradient(120deg, rgba(255, 65, 73, 0.16), transparent 60%);
+				color: #fff;
+				position: relative;
+			}
+
+			.hero-panel::after {
+				content: "";
+				position: absolute;
+				right: -4rem;
+				bottom: -4rem;
+				width: 13rem;
+				height: 13rem;
+				background: radial-gradient(circle, rgba(255, 65, 73, 0.34), transparent 68%);
+				pointer-events: none;
+			}
+
+			.eyebrow {
+				margin: 0 0 0.9rem;
+				text-transform: uppercase;
+				letter-spacing: 0.18em;
+				font-size: 0.78rem;
+				color: rgba(255, 255, 255, 0.68);
+			}
+
+			h1 {
+				margin: 0;
+				font-family: "Space Grotesk", sans-serif;
+				font-size: clamp(2.4rem, 5vw, 4.5rem);
+				line-height: 0.95;
+				max-width: 10ch;
+			}
+
+			.hero-copy {
+				margin-top: 1.2rem;
+				max-width: 46rem;
+				font-size: 1rem;
+				line-height: 1.7;
+				color: rgba(255, 255, 255, 0.82);
+			}
+
+			.hero-actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.9rem;
+				margin-top: 1.8rem;
+			}
+
+			.button {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 3.1rem;
+				padding: 0.8rem 1.25rem;
+				border-radius: 999px;
+				font-weight: 700;
+				transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+			}
+
+			.button:hover,
+			.button:focus-visible {
+				transform: translateY(-1px);
+			}
+
+			.button-primary {
+				background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+				color: #fff;
+				box-shadow: 0 16px 28px rgba(255, 65, 73, 0.24);
+			}
+
+			.button-secondary {
+				background: rgba(255, 255, 255, 0.08);
+				color: #fff;
+				border: 1px solid rgba(255, 255, 255, 0.14);
+			}
+
+			.hero-side {
+				padding: 1.3rem;
+				background: var(--surface);
+				backdrop-filter: blur(16px);
+				display: grid;
+				gap: 1rem;
+			}
+
+			.side-stat {
+				padding: 1rem 1.1rem;
+				border-radius: 22px;
+				background: var(--surface-strong);
+				border: 1px solid var(--line);
+			}
+
+			.side-stat strong {
+				display: block;
+				font-family: "Space Grotesk", sans-serif;
+				font-size: 1rem;
+				margin-bottom: 0.35rem;
+			}
+
+			.side-stat span {
+				color: var(--text-soft);
+				font-size: 0.95rem;
+				line-height: 1.55;
+			}
+
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 1rem;
+				margin-top: 1.25rem;
+			}
+
+			.card {
+				padding: 1.35rem;
+				background: var(--surface);
+				backdrop-filter: blur(14px);
+			}
+
+			.card h2 {
+				margin: 0 0 0.7rem;
+				font-family: "Space Grotesk", sans-serif;
+				font-size: 1.25rem;
+			}
+
+			.card p,
+			.card li {
+				color: var(--text-soft);
+				line-height: 1.65;
+				font-size: 0.96rem;
+			}
+
+			.card ul,
+			.card ol {
+				margin: 0;
+				padding-left: 1.1rem;
+			}
+
+			.card li + li {
+				margin-top: 0.45rem;
+			}
+
+			.footer-note {
+				margin-top: 1.2rem;
+				padding: 1rem 1.1rem;
+				border-radius: 22px;
+				background: rgba(255, 255, 255, 0.64);
+				border: 1px solid var(--line);
+				color: var(--text-soft);
+				font-size: 0.95rem;
+				line-height: 1.6;
+			}
+
+			@media (max-width: 920px) {
+				.hero {
+					grid-template-columns: 1fr;
+				}
+
+				.grid {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			@media (max-width: 640px) {
+				.page {
+					width: min(100% - 1rem, 100%);
+				}
+
+				.header {
+					flex-direction: column;
+					align-items: flex-start;
+				}
+
+				.hero-panel,
+				.card,
+				.hero-side {
+					border-radius: 24px;
+				}
+
+				.hero-panel {
+					padding: 1.6rem;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="page">
+			<header class="header">
+				<div class="brand">
+					<img src="/static/icon.png" alt="Twitch Valorant RR Bot" />
+					<div class="brand-copy">
+						<strong>Twitch Valorant RR Bot</strong>
+						<span>Free RR tracking for Twitch streamers</span>
+					</div>
+				</div>
+				<a class="button button-primary" href="/dashboard">Open Dashboard</a>
+			</header>
+
+			<section class="hero">
+				<div class="hero-panel">
+					<p class="eyebrow">Live Chat Rank Tracking</p>
+					<h1>Show your Valorant RR changes on stream.</h1>
+					<p class="hero-copy">
+						This application connects your Twitch channel with a tracked Riot ID, watches for live streams,
+						checks your Valorant RR while you are streaming, and posts updates to chat when a new match is detected.
+					</p>
+					<div class="hero-actions">
+						<a class="button button-primary" href="/dashboard">Access the app</a>
+					</div>
+				</div>
+
+				<aside class="hero-side">
+					<div class="side-stat">
+						<strong>Automatic live detection</strong>
+						<span>The bot reacts to Twitch live status and also runs periodic reconciliation to recover from missed events.</span>
+					</div>
+					<div class="side-stat">
+						<strong>Chat commands</strong>
+						<span>Viewers can ask for the current rank with <code>!rr</code> or <code>!rank</code>.</span>
+					</div>
+					<div class="side-stat">
+						<strong>Free to use</strong>
+						<span>The public deployment is available at <a href="https://twitchrr.systest.eu">twitchrr.systest.eu</a>.</span>
+					</div>
+				</aside>
+			</section>
+
+			<section class="grid">
+				<article class="card">
+					<h2>How It Works</h2>
+					<p>
+						After you sign in with Twitch and save your Riot ID, the bot listens for your live status,
+						opens a tracked stream session, polls your RR during the stream, and stores match updates.
+					</p>
+				</article>
+
+				<article class="card">
+					<h2>Setup</h2>
+					<ol>
+						<li>Open the dashboard.</li>
+						<li>Sign in with Twitch.</li>
+						<li>Enable the bot.</li>
+						<li>Enter your Riot ID as <code>Name#TAG</code>.</li>
+					</ol>
+				</article>
+
+				<article class="card">
+					<h2>Chat Output</h2>
+					<p>
+						When a new match is detected, chat receives the RR change, current rank, current RR, and a running total for the stream session.
+					</p>
+				</article>
+			</section>
+
+			<div class="footer-note">
+				Use the dashboard to configure your channel and review tracked streams and matches. The application itself is available at
+				<a href="/dashboard"><strong>/dashboard</strong></a>.
+			</div>
+		</div>
+	</body>
+</html>
