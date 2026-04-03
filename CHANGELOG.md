@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.7](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.6...v1.0.7) (2026-04-03)
+
+
+### Bug Fixes
+
+* **App:** Added rate limit to chat messages ([13c3ed9](https://github.com/gergof/twitch-valorant-rr-bot/commit/13c3ed948be311c4241815256f570226df648c17))
+* Backfill latest off-stream match on online status, allow duplicates in valorant match id ([656e494](https://github.com/gergof/twitch-valorant-rr-bot/commit/656e494fe55926401c145939ea592a1b075f48da))
+* **LiveMonitor:** Fixed monitor task constantly being rescheduled at every reconciliation ([9dd0c5b](https://github.com/gergof/twitch-valorant-rr-bot/commit/9dd0c5b910fb53afdda91df5f844960b2d0abc69))
+
+
+### Build/CI
+
+* Moved mikro-orm config to src dir to be properly handled by typescript ([f82b810](https://github.com/gergof/twitch-valorant-rr-bot/commit/f82b810e53e2ca748ffc395028b323d4a7966465))
+
+
+### Documentation
+
+* Updated landing page documentation ([152ec52](https://github.com/gergof/twitch-valorant-rr-bot/commit/152ec52774be69e68a22a5654bd7821e1a018a8a))
+
 ## [1.0.6](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.5...v1.0.6) (2026-04-01)
 
 
