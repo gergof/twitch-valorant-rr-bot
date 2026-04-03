@@ -93,6 +93,7 @@
 			}
 
 			.hero-panel,
+			.hero-side,
 			.card {
 				border: 1px solid rgba(255, 255, 255, 0.8);
 				border-radius: 30px;
@@ -243,17 +244,6 @@
 				margin-top: 0.45rem;
 			}
 
-			.footer-note {
-				margin-top: 1.2rem;
-				padding: 1rem 1.1rem;
-				border-radius: 22px;
-				background: rgba(255, 255, 255, 0.64);
-				border: 1px solid var(--line);
-				color: var(--text-soft);
-				font-size: 0.95rem;
-				line-height: 1.6;
-			}
-
 			@media (max-width: 920px) {
 				.hero {
 					grid-template-columns: 1fr;
@@ -344,6 +334,7 @@
 						<li>Sign in with Twitch.</li>
 						<li>Enable the bot.</li>
 						<li>Enter your Riot ID as <code>Name#TAG</code>.</li>
+						<li>If your chat has restrictions like follower-only or sub-only mode, mod the bot with <code>/mod valorantrrbot_</code>.</li>
 					</ol>
 				</article>
 
@@ -355,10 +346,6 @@
 				</article>
 			</section>
 
-			<div class="footer-note">
-				Use the dashboard to configure your channel and review tracked streams and matches. The application itself is available at
-				<a href="/dashboard"><strong>/dashboard</strong></a>.
-			</div>
 		</div>
 	</body>
 </html>
