@@ -313,6 +313,8 @@ class LiveMonitor {
 	}
 
 	private async removeChannel(channel: Channel): Promise<void> {
+		await this.handleOffline(channel);
+
 		const subscription = this.subscriptions.get(channel.id);
 
 		if (subscription) {
@@ -321,10 +323,8 @@ class LiveMonitor {
 			subscription.chat.stop();
 		}
 
-		this.liveChannels.delete(channel.id);
-		this.app.taskRunner.stopRRUpdateTask(channel);
 		this.subscriptions.delete(channel.id);
-		await this.handleOffline(channel);
+		
 		logger.info('Removed channel from live monitor', {
 			channelId: channel.id,
 			twitchId: channel.twitchId
@@ -418,22 +418,23 @@ class LiveMonitor {
 			return;
 		}
 
-		const wasLive = this.liveChannels.has(channel.id);
-		this.liveChannels.add(channel.id);
+		if(!this.liveChannels.has(channel.id)){
+			this.liveChannels.add(channel.id);
 
-		const stream = await this.upsertLiveStream(channel, liveStream);
-		await this.app.taskRunner.storeLatestMatch(channel, null);
-		this.app.taskRunner.startRRUpdateTask(channel, stream);
-		logger.info('Channel marked live', {
-			channelId: channel.id,
-			twitchId: channel.twitchId,
-			streamId: stream.id,
-			streamTwitchId: stream.twitchId,
-			sendWelcome
-		});
+			const stream = await this.upsertLiveStream(channel, liveStream);
+			await this.app.taskRunner.storeLatestMatch(channel, null);
+			this.app.taskRunner.startRRUpdateTask(channel, stream);
+			logger.info('Channel marked live', {
+				channelId: channel.id,
+				twitchId: channel.twitchId,
+				streamId: stream.id,
+				streamTwitchId: stream.twitchId,
+				sendWelcome
+			});
 
-		if (!wasLive && sendWelcome) {
-			await this.app.sendWelcomeMessage(channel);
+			if (sendWelcome) {
+				await this.app.sendWelcomeMessage(channel);
+			}
 		}
 	}
 
