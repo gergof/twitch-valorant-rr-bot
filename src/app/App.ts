@@ -29,8 +29,8 @@ import {
 } from '../types.js';
 
 import LiveMonitor from './LiveMonitor.js';
-import RateLimitGuard from './RateLimitGuard.js';
 import RRFetcher from './RRFetcher.js';
+import RateLimitGuard from './RateLimitGuard.js';
 import TaskRunner from './TaskRunner.js';
 
 class App {
@@ -42,13 +42,11 @@ class App {
 	public rrFetcher: RRFetcher;
 	public taskRunner: TaskRunner;
 	private liveMonitor: LiveMonitor;
-	
+
 	private welcomeMessageRateLimitGuard = new RateLimitGuard(
 		CHAT_RATE_LIMIT_MS
 	);
-	private rrMessageRateLimitGuard = new RateLimitGuard(
-		CHAT_RATE_LIMIT_MS
-	);
+	private rrMessageRateLimitGuard = new RateLimitGuard(CHAT_RATE_LIMIT_MS);
 
 	private botAuthorizationState: string | null = null;
 	private botTwitchId: string | null = null;

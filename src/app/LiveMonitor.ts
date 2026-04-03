@@ -324,7 +324,7 @@ class LiveMonitor {
 		}
 
 		this.subscriptions.delete(channel.id);
-		
+
 		logger.info('Removed channel from live monitor', {
 			channelId: channel.id,
 			twitchId: channel.twitchId
@@ -418,7 +418,7 @@ class LiveMonitor {
 			return;
 		}
 
-		if(!this.liveChannels.has(channel.id)){
+		if (!this.liveChannels.has(channel.id)) {
 			this.liveChannels.add(channel.id);
 
 			const stream = await this.upsertLiveStream(channel, liveStream);

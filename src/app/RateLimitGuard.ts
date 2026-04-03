@@ -9,10 +9,7 @@ class RateLimitGuard {
 		const now = Date.now();
 		const lastSentAt = this.channelTimestamps.get(channel.id);
 
-		if (
-			lastSentAt !== undefined &&
-			now - lastSentAt < this.cooldownMs
-		) {
+		if (lastSentAt !== undefined && now - lastSentAt < this.cooldownMs) {
 			return false;
 		}
 
