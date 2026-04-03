@@ -7,6 +7,7 @@ import { nanoid } from 'nanoid';
 
 import Config from '../Config.js';
 import {
+	CHAT_RATE_LIMIT_MS,
 	TWITCH_API_BASE,
 	TWITCH_AUTHORIZATION_URL,
 	TWITCH_TOKEN_URL,
@@ -28,6 +29,7 @@ import {
 } from '../types.js';
 
 import LiveMonitor from './LiveMonitor.js';
+import RateLimitGuard from './RateLimitGuard.js';
 import RRFetcher from './RRFetcher.js';
 import TaskRunner from './TaskRunner.js';
 
@@ -40,6 +42,13 @@ class App {
 	public rrFetcher: RRFetcher;
 	public taskRunner: TaskRunner;
 	private liveMonitor: LiveMonitor;
+	
+	private welcomeMessageRateLimitGuard = new RateLimitGuard(
+		CHAT_RATE_LIMIT_MS
+	);
+	private rrMessageRateLimitGuard = new RateLimitGuard(
+		CHAT_RATE_LIMIT_MS
+	);
 
 	private botAuthorizationState: string | null = null;
 	private botTwitchId: string | null = null;
@@ -470,6 +479,14 @@ class App {
 	}
 
 	public async sendWelcomeMessage(channel: Channel): Promise<void> {
+		if (!this.welcomeMessageRateLimitGuard.isAllowed(channel)) {
+			logger.info('Skipped welcome message due to rate limit', {
+				channelId: channel.id,
+				twitchId: channel.twitchId
+			});
+			return;
+		}
+
 		await this.twitchApi.chat.sendChatMessageAsApp(
 			await this.getBotTwitchId(),
 			channel.twitchId,
@@ -482,6 +499,14 @@ class App {
 	}
 
 	public async sendRRMessage(channel: Channel): Promise<void> {
+		if (!this.rrMessageRateLimitGuard.isAllowed(channel)) {
+			logger.info('Skipped RR status message due to rate limit', {
+				channelId: channel.id,
+				twitchId: channel.twitchId
+			});
+			return;
+		}
+
 		const em = this.orm.em.fork();
 
 		const lastMatch = await em.findOne(
