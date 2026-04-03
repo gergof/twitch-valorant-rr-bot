@@ -2,8 +2,8 @@ import { defineConfig } from "@mikro-orm/postgresql";
 import { Migrator } from "@mikro-orm/migrations";
 import dotenv from 'dotenv';
 
-import Config from "./dist/Config.js";
-import models from "./dist/models/index.js";
+import Config from "./Config.js";
+import models from "./models/index.js";
 
 dotenv.config()
 const config = new Config()
