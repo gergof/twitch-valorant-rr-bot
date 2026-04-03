@@ -422,6 +422,7 @@ class LiveMonitor {
 		this.liveChannels.add(channel.id);
 
 		const stream = await this.upsertLiveStream(channel, liveStream);
+		await this.app.taskRunner.storeLatestMatch(channel, null);
 		this.app.taskRunner.startRRUpdateTask(channel, stream);
 		logger.info('Channel marked live', {
 			channelId: channel.id,

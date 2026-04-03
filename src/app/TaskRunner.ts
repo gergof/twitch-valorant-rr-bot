@@ -4,6 +4,7 @@ import logger from '../logger.js';
 import Channel from '../models/Channel.js';
 import Match from '../models/Match.js';
 import Stream from '../models/Stream.js';
+import { LastMatchStatus } from '../types.js';
 
 import App from './App.js';
 
@@ -24,6 +25,72 @@ class TaskRunner {
 
 	private getRRUpdateTaskKey(channel: Channel): string {
 		return `rr-update-${channel.id}`;
+	}
+
+	private async fetchLatestMatchStatus(
+		channel: Channel
+	): Promise<LastMatchStatus | null> {
+		if (!channel.valorantAccount) {
+			return null;
+		}
+
+		try {
+			return await this.app.rrFetcher.getLastMatchStatus(
+				channel.valorantAccount
+			);
+		} catch (error) {
+			if (error instanceof Error && error.message === 'Invalid user') {
+				await this.app.deactivateChannel(channel.id);
+				return null;
+			}
+
+			throw error;
+		}
+	}
+
+	public async storeLatestMatch(
+		channel: Channel,
+		stream: Stream | null
+	): Promise<Match | null> {
+		const lastMatch = await this.fetchLatestMatchStatus(channel);
+
+		if (!lastMatch) {
+			return null;
+		}
+
+		const em = this.app.orm.em.fork();
+		const lastMatchInDb = await em.findOne(
+			Match,
+			{
+				channel: channel
+			},
+			{
+				last: 1
+			}
+		);
+
+		if (lastMatchInDb?.matchId == lastMatch.matchId) {
+			return null;
+		}
+
+		const match = em.create(Match, {
+			matchId: lastMatch.matchId,
+			rank: lastMatch.rank,
+			rr: lastMatch.rr,
+			rrChange: lastMatch.rrChange,
+			map: lastMatch.map,
+			stream,
+			channel
+		});
+		await em.flush();
+
+		logger.info('Stored latest match', {
+			channelId: channel.id,
+			streamId: stream?.id ?? null,
+			matchId: match.matchId
+		});
+
+		return match;
 	}
 
 	public stopRRUpdateTask(channel: Channel): void {
@@ -70,69 +137,12 @@ class TaskRunner {
 						new AsyncTask(
 							`${key}-task`,
 							async () => {
-								const em = this.app.orm.em.fork();
-
-								if (!channel.valorantAccount) {
-									return;
-								}
-
-								let lastMatch;
-								try {
-									lastMatch =
-										await this.app.rrFetcher.getLastMatchStatus(
-											channel.valorantAccount
-										);
-								} catch (error) {
-									if (
-										error instanceof Error &&
-										error.message === 'Invalid user'
-									) {
-										await this.app.deactivateChannel(
-											channel.id
-										);
-										return;
-									}
-
-									throw error;
-								}
-
-								if (!lastMatch) {
-									return;
-								}
-
-								const lastMatchInDb = await em.findOne(
-									Match,
-									{
-										channel: channel
-									},
-									{
-										last: 1
-									}
+								const match = await this.storeLatestMatch(
+									channel,
+									stream
 								);
 
-								if (
-									lastMatchInDb?.matchId != lastMatch.matchId
-								) {
-									// store new match
-									const match = em.create(Match, {
-										matchId: lastMatch.matchId,
-										rank: lastMatch.rank,
-										rr: lastMatch.rr,
-										rrChange: lastMatch.rrChange,
-										map: lastMatch.map,
-										stream: stream,
-										channel: channel
-									});
-									await em.flush();
-									logger.info(
-										'Stored new match from RR poll',
-										{
-											channelId: channel.id,
-											streamId: stream.id,
-											matchId: match.matchId
-										}
-									);
-
+								if (match) {
 									await this.app.sendRRChangeMessage(
 										channel,
 										stream,

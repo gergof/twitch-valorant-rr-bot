@@ -7,12 +7,12 @@ const MatchSchema = defineEntity({
 	name: 'Match',
 	properties: {
 		id: p.integer().unsigned().autoincrement().primary(),
-		matchId: p.string().length(50).unique(),
+		matchId: p.string().length(50).index(),
 		rank: p.string().length(30),
 		rr: p.smallint(),
 		rrChange: p.smallint(),
 		map: p.string().length(50),
-		stream: () => p.manyToOne(Stream),
+		stream: () => p.manyToOne(Stream).nullable(),
 		channel: () => p.manyToOne(Channel),
 		createdAt: p.datetime().onCreate(() => new Date()),
 		updatedAt: p

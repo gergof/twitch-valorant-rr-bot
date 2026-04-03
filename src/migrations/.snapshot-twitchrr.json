@@ -437,7 +437,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": true,
+          "unique": false,
           "length": 50,
           "precision": null,
           "scale": null,
@@ -516,7 +516,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": 32,
@@ -581,9 +581,9 @@
             "match_id"
           ],
           "composite": false,
-          "constraint": true,
-          "keyName": "match_match_id_unique",
-          "unique": true,
+          "constraint": false,
+          "keyName": "match_match_id_index",
+          "unique": false,
           "primary": false
         },
         {
@@ -623,7 +623,7 @@
             "id"
           ],
           "updateRule": "no action",
-          "deleteRule": "no action"
+          "deleteRule": "set null"
         }
       },
       "nativeEnums": {},
