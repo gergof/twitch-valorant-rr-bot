@@ -1,6 +1,6 @@
 {
   "name": "twitch-valorant-rr-bot",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": true,
   "type": "module",
   "description": "Twitch bot to output your RR change to the chat at the end of each match",

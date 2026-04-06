@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.9](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.8...v1.0.9) (2026-04-06)
+
+
+### Bug Fixes
+
+* Added timestamp to log messages ([c3657a8](https://github.com/gergof/twitch-valorant-rr-bot/commit/c3657a8334c19e8d2511dc55370ace1d00eb59dc))
+
+
+### Build/CI
+
+* Improved docker build pipeline ([033118b](https://github.com/gergof/twitch-valorant-rr-bot/commit/033118ba22e5201083cd1fd054ffdd506ee302fb))
+
 ## [1.0.8](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.7...v1.0.8) (2026-04-06)
 
 
