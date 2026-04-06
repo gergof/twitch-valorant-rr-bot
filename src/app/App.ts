@@ -510,9 +510,13 @@ class App {
 		const lastMatch = await em.findOne(
 			Match,
 			{
-				channel: channel
+				channel
 			},
-			{ last: 1 }
+			{
+				orderBy: {
+					id: 'DESC'
+				}
+			}
 		);
 
 		await this.twitchApi.chat.sendChatMessageAsApp(

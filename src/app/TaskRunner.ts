@@ -62,10 +62,12 @@ class TaskRunner {
 		const lastMatchInDb = await em.findOne(
 			Match,
 			{
-				channel: channel
+				channel
 			},
 			{
-				last: 1
+				orderBy: {
+					id: 'DESC'
+				}
 			}
 		);
 
