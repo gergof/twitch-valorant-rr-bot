@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.8](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.7...v1.0.8) (2026-04-06)
+
+
+### Bug Fixes
+
+* Reliably fetch the last match for the channel from the database ([cd11369](https://github.com/gergof/twitch-valorant-rr-bot/commit/cd11369ccc33ff3a2ee0b6c050ca3ff1a9bab43a))
+
 ## [1.0.7](https://github.com/gergof/twitch-valorant-rr-bot/compare/v1.0.6...v1.0.7) (2026-04-03)
 
 
