@@ -3,6 +3,5 @@ dist
 .git
 .gitignore
 .env
-npm-debug.log
 Dockerfile
 docker-compose.yml

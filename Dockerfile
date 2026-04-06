@@ -1,28 +1,25 @@
-FROM node:22-alpine AS deps
+FROM node:22-alpine AS builder
 
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package*.json ./
 RUN npm ci
-
-
-
-FROM deps AS build
-
-WORKDIR /app
-COPY tsconfig.json ./
-COPY src ./src
+COPY . .
 RUN npm run build
 
 
 
-FROM node:22-alpine AS production
+FROM node:22-alpine
+
+ENV NODE_ENV=production
+
+RUN mkdir -p /app && chown node:node /app
 
 WORKDIR /app
-ENV NODE_ENV=production
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
-COPY --from=build /app/dist ./
-RUN chown node:node -R /app
 USER node
+
+COPY --chown=node:node package*.json ./
+RUN npm ci --omit=dev
+COPY --from=builder --chown=node:node /app/dist ./
+
 EXPOSE 3000
 CMD ["sh", "-c", "npm run migrate && node index.js"]
